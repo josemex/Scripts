@@ -101,7 +101,7 @@ function OnTick()
                 prediction = qPred()
                 if Config.Fight then Fight() end
                 if Config.Harass then Harass() end
-								if Config.autoIgnite then autoIgnite() end
+								if Config.lignite.autoIgnite then autoIgnite() end
         end
         if ts.target == nil and Config.Fight and Config.lmisc.Movement then
                 myHero:MoveTo(mousePos.x, mousePos.z)
