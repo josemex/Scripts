@@ -233,7 +233,7 @@ end
  
 function autoE()
         local box = 280
-        if GetDistance(ts.target) < box or (wClone ~= nil and wClone.valid and GetDistance(ts.target, wClone) < box) or (rClone ~= nil and rClone.valid and GetDistance(ts.target, rClone) < box) then
+        if GetDistance(ts.target, myHero) < box or (wClone ~= nil and wClone.valid and GetDistance(ts.target, wClone) < box) or (rClone ~= nil and rClone.valid and GetDistance(ts.target, rClone) < box) then
                 CastSpell(_E)
         else
                 for i = 1, heroManager.iCount do
