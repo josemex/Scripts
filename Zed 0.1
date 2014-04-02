@@ -184,7 +184,7 @@ function Fight()
                                 CastSpell(_W, ts.target.x, ts.target.z)
                         end
                 end
-                if not WREADY or wClone ~= nil then    
+                if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then qPred()  
                         if EREADY then  
                                 if ValidTarget(ts.target) then    
                                        autoE()
