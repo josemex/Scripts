@@ -29,24 +29,31 @@ function OnLoad()
         PrintFloatText(myHero,11,"LETS RAPE >:D !")
 		if VIP_USER then
 			VP = VPrediction()
+			
 		end
 end
  
 function LoadMenu()
-        Config = scriptConfig("Zed by Lucas", "Die")
+        Config = scriptConfig("BioZed by Lucas", "Die")
+				
         Config:addParam("Fight", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
         Config:addParam("Harass", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("T"))
-        Config:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
-				Config:addParam("sep", "----- [ KS Settings ] -----", SCRIPT_PARAM_INFO, "")
-        Config:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
-				Config:addParam("sep", "----- [ Draw Settings ] -----", SCRIPT_PARAM_INFO, "")
-        Config:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
-        Config:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
-        Config:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
-        Config:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
 				Config:addSubMenu("Combo Settings", "ComboS")
         Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-        Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
+        Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF,
+				true)
+				Config:addSubMenu("Ignite Settings", "lignite")    
+        Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Combo"})
+        Config.lignite:permaShow("igniteOptions")
+				Config.lignite:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
+				Config:addSubMenu("Drawings", "draw")
+        Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
+        Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
+        Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
+				Config:addSubMenu("Misc", "lmisc")
+				Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
+				Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
+				
         Config:permaShow("Fight")
         Config:permaShow("Harass")
         ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190, DAMAGE_PHYSICAL, true)
@@ -90,13 +97,13 @@ function OnTick()
         end
         SetCooldowns() 
         if ValidTarget(ts.target) then
-                if Config.AutoE then autoE() end
+                if Config.lmisc.AutoE then autoE() end
                 prediction = qPred()
                 if Config.Fight then Fight() end
                 if Config.Harass then Harass() end
-                if Config.autoIgnite then autoIgnite() end
+								if Config.autoIgnite then autoIgnite() end
         end
-        if ts.target == nil and Config.Fight and Config.Movement then
+        if ts.target == nil and Config.Fight and Config.lmisc.Movement then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
 end
@@ -148,23 +155,18 @@ end
 
  
 function OnDraw()
- if Config.Qdraw then
-                if QREADY then
-                        DrawCircle(myHero.x, myHero.y, myHero.z, 900, ARGB(255,0,255,0))
-                else
+ if Config.draw.Qdraw then
+
                         DrawCircle(myHero.x, myHero.y, myHero.z, 900, ARGB(255,255,0,0))
-                end
+
         end
-        if Config.Edraw then
-                if EREADY then
-                        DrawCircle(myHero.x, myHero.y, myHero.z, 290, ARGB(255,0,255,0))
-                else
+        if Config.draw.Edraw then
                         DrawCircle(myHero.x, myHero.y, myHero.z, 290, ARGB(255,255,0,0))
-                end
+
         end
  
  
-        if Config.DmgIndic then
+        if Config.draw.DmgIndic then
                 for i=1, EnemysInTable do
                         local enemy = EnemyTable[i].hero
                         if ValidTarget(enemy) then
@@ -214,21 +216,28 @@ function Fight()
                                 CastSpell(_W, ts.target.x, ts.target.z)
                         end
                 end
+								
                 if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then qPred()  
                         if EREADY then  
                                 if ValidTarget(ts.target) then    
                                        autoE()
                                 end
                         end
+												
                         if QREADY and prediction then 
                                 CastSpell(_Q, prediction.x, prediction.z)
                         end
                 end
         end
         
-				
+				if Config.lignite.igniteOptions == 2 then
+                                        if GetDistance(ts.target) <= 600 then
+                                                CastSpell(ignite, ts.target)
+																			  end
+																				end
         CastItems(ts.target)
-       
+
+
         if not QREADY and not EREADY then
                 local wDist = 0
                 local rDist = 0
@@ -501,7 +510,7 @@ function Calculations()
                                         --EnemyTable[i].NotReady = false
                         --end
                 elseif (not RREADY) and enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg + ciDmg + cItemDmg then
-                                EnemyTable[i].IndicatorText = "All In Kill"
+                                EnemyTable[i].IndicatorText = "SBTW"
                                 EnemyTable[i].IndicatorPos = 0
                         if QMana + WMana + EMana > MyMana or not QREADY or not WREADY or not EREADY then
                                         EnemyTable[i].NotReady = true
@@ -517,7 +526,7 @@ function Calculations()
                                         EnemyTable[i].NotReady = false
                         end
                 elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
-                                EnemyTable[i].IndicatorText = "All In Kill"
+                                EnemyTable[i].IndicatorText = "Just Rape"
                                 EnemyTable[i].IndicatorPos = 0
                         if QMana + WMana + EMana + RMana > MyMana or not QREADY or not WREADY or not EREADY or not RREADY then
                                         EnemyTable[i].NotReady = true
@@ -580,5 +589,4 @@ end
  
 function OnAnimation(unit, animationName)
         if unit.isMe and lastAnimation ~= animationName then lastAnimation = animationName end
-end
-  
+end 
