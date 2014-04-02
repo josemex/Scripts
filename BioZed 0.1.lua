@@ -2,6 +2,7 @@
  
 if VIP_USER then
         PrintChat("Dont forgot to give me feedback :)If u want to support me,VIP will be appreciated.")
+        PrintChat("<font color=\"#81BEF7\" >>Zed By Lucas<</font> ")
 		require "VPrediction"
 else
         PrintChat("<font color=\"#81BEF7\" >>Zed By Lucas<</font> ")
