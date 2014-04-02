@@ -106,6 +106,9 @@ function OnTick()
         if ts.target == nil and Config.Fight and Config.lmisc.Movement then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
+				if ts.target == nil and Config.Harass and Config.lmisc.Movement then
+                myHero:MoveTo(mousePos.x, mousePos.z)
+        end
 end
 
 function autoIgnite()
@@ -255,7 +258,9 @@ function Fight()
 				if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
                 CastSpell(_R)
         end
-        GetDistance(ts.target, myHero)
+        if GetDistance(ts.target) < 190 then
+myHero:Attack(ts.target)
+end
 end
  
 function Harass()
