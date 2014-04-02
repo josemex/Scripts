@@ -255,17 +255,17 @@ function Fight()
 				if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
                 CastSpell(_R)
         end
-        myHero:Attack(ts.target)
+        GetDistance(ts.target, myHero)
 end
  
 function Harass()
-        if prediction ~= nil and (QREADY and WREADY and GetDistance(prediction) < 700) or (QREADY and wClone ~= nil and wClone.valid and GetDistance(prediction, wClone) < 900) then
+        if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700)) or (QREADY and wClone ~= nil and wClone.valid and GetDistance(prediction, wClone) < 900) then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
                         CastSpell(_W, ts.target.x, ts.target.z)
                 else
                         CastSpell(_Q, prediction.x, prediction.z)
                 end
-        elseif QREADY and not WREADY and prediction and GetDistance(prediction) < 900 then
+        elseif QREADY and not WREADY and prediction and (GetDistance(prediction) < 900) then
                 CastSpell(_Q, prediction.x, prediction.z)
         end
 end
