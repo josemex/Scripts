@@ -1,5 +1,5 @@
 -- Zed Script --
- 
+if myHero.charName ~= "Zed" then return end
 if VIP_USER then
         PrintChat("Dont forgot to give me feedback :)If u want to support me,VIP will be appreciated.")
         PrintChat("<font color=\"#FF0000\" >>Zed By Lucas<</font> ")
@@ -13,17 +13,16 @@ local   ts
 local   prediction
 local VP
 
-if myHero.charName ~= "Zed" then return end
  
 function OnLoad()
         LoadMenu()
         LoadVariables()
         Ignite()
-				for i=1, heroManager.iCount do
-                local champ = heroManager:GetHero(i)
-                if champ.team ~= myHero.team then
-                        EnemysInTable = EnemysInTable + 1
-                        EnemyTable[EnemysInTable] = { hero = champ, Name = champ.charName, p = 0, q = 0, q2 = 0, e = 0, r = 0, IndicatorText = "", IndicatorPos, NotReady = false, Pct = 0}
+	for i=1, heroManager.iCount do
+        local champ = heroManager:GetHero(i)
+        if champ.team ~= myHero.team then
+        EnemysInTable = EnemysInTable + 1
+        EnemyTable[EnemysInTable] = { hero = champ, Name = champ.charName, p = 0, q = 0, q2 = 0, e = 0, r = 0, IndicatorText = "", IndicatorPos, NotReady = false, Pct = 0}
                 end
         end
         PrintFloatText(myHero,11,"LETS RAPE >:D !")
@@ -38,21 +37,23 @@ function LoadMenu()
 				
         Config:addParam("Fight", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
         Config:addParam("Harass", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("T"))
-				Config:addSubMenu("Combo Settings", "ComboS")
-        Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-        Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF,
-				true)
-				Config:addSubMenu("Ignite Settings", "lignite")    
-        Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Combo"})
-        Config.lignite:permaShow("igniteOptions")
-				Config.lignite:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
-				Config:addSubMenu("Drawings", "draw")
-        Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
-        Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
-        Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
-				Config:addSubMenu("Misc", "lmisc")
-				Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
-				Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
+	Config:addSubMenu("Combo Settings", "ComboS")
+               Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
+               Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
+               
+	Config:addSubMenu("Ignite Settings", "lignite")    
+               Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Combo"})
+               Config.lignite:permaShow("igniteOptions")
+	       Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
+	       
+	Config:addSubMenu("Drawings", "draw")
+               Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
+               Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
+               Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
+               
+	Config:addSubMenu("Misc", "lmisc")
+		Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
+		Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
 				
         Config:permaShow("Fight")
         Config:permaShow("Harass")
@@ -63,7 +64,7 @@ end
  
 function LoadVariables()
         wClone, rClone = nil, nil
-				RREADY, QREADY, WREADY, EREADY = false, false, false, false
+	RREADY, QREADY, WREADY, EREADY = false, false, false, false
         ignite = nil
         lastW = 0
         delay, qspeed = 235, 1.742
