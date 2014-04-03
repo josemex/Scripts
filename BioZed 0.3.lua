@@ -88,9 +88,9 @@ end
  
 function OnTick()
         ts:update()
-				Calculations()
-				GlobalInfos()
-				        for i = 1, heroManager.iCount, 1 do
+	Calculations()
+	GlobalInfos()
+        for i = 1, heroManager.iCount, 1 do
         local enemyhero = heroManager:getHero(i)
                 if enemyhero.team ~= myHero.team and TargetHaveBuff("zedulttargetmark", enemyhero) then        
                         ts.target = enemyhero
@@ -98,16 +98,16 @@ function OnTick()
         end
         SetCooldowns() 
         if ValidTarget(ts.target) then
-                if Config.lmisc.AutoE then autoE() end
-                prediction = qPred()
-                if Config.Fight then Fight() end
-                if Config.Harass then Harass() end
-								if Config.lignite.autoIgnite then autoIgnite() end
+        if Config.lmisc.AutoE then autoE() end
+        prediction = qPred()
+        if Config.Fight then Fight() end
+        if Config.Harass then Harass() end
+	if Config.lignite.autoIgnite then autoIgnite() end
         end
         if ts.target == nil and Config.Fight and Config.lmisc.Movement then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
-				if ts.target == nil and Config.Harass and Config.lmisc.Movement then
+	if ts.target == nil and Config.Harass and Config.lmisc.Movement then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
 end
