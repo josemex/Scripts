@@ -124,7 +124,7 @@ function autoIgnite()
         if Config.lignite.autoIgnite then
                 if iReady then
                         local ignitedmg = 0
-                        for i = 1, heroManager.iCount, do
+                        for i = 1, heroManager.iCount, 1 do
                                 local enemyhero = heroManager:getHero(i)
                                         if ValidTarget(enemyhero,600) then
                                                 ignitedmg = 50 + 20 * myHero.level
@@ -432,6 +432,23 @@ function qPred()
 					return GetPredictionPos(ts.target, travelDuration)
 			end
 		end
+end
+function ArrangePrioritys()
+    for i, target in pairs(GetEnemyHeroes()) do
+        SetPriority(priorityTable.AD_Carry, target, 1)
+        SetPriority(priorityTable.AP, target, 2)
+        SetPriority(priorityTable.Support, target, 3)
+        SetPriority(priorityTable.Bruiser, target, 4)
+        SetPriority(priorityTable.Tank, target, 5)
+    end
+end
+
+function SetPriority(table, hero, priority)
+    for i=1, #table, 1 do
+        if hero.charName:find(table[i]) ~= nil then
+            TS_SetHeroPriority(priority, hero.charName)
+        end
+    end
 end
  
 function CastItems(target)
