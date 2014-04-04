@@ -124,7 +124,7 @@ function autoIgnite()
         if Config.lignite.autoIgnite then
                 if iReady then
                         local ignitedmg = 0
-                        for i = 1, heroManager.iCount, 1 do
+                        for i = 1, heroManager.iCount, do
                                 local enemyhero = heroManager:getHero(i)
                                         if ValidTarget(enemyhero,600) then
                                                 ignitedmg = 50 + 20 * myHero.level
