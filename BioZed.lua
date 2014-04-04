@@ -157,7 +157,7 @@ function OnTick()
 end
 
 function autoIgnite()
-        if Config.autoIgnite then
+        if Config.lignite.autoIgnite then
                 if iReady then
                         local ignitedmg = 0
                         for i = 1, heroManager.iCount, 1 do
