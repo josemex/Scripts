@@ -60,36 +60,7 @@ function LoadMenu()
 		Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
 		
         Config:permaShow("Fight")
-				
-				priorityTable = {
-	    AP = {
-	        "Annie", "Ahri", "Akali", "Anivia", "Annie", "Brand", "Cassiopeia", "Diana", "Evelynn", "FiddleSticks", "Fizz", "Gragas", "Heimerdinger", "Karthus",
-	        "Kassadin", "Katarina", "Kayle", "Kennen", "Leblanc", "Lissandra", "Lux", "Malzahar", "Mordekaiser", "Morgana", "Nidalee", "Orianna",
-	        "Ryze", "Sion", "Swain", "Syndra", "Teemo", "TwistedFate", "Veigar", "Viktor", "Vladimir", "Xerath", "Ziggs", "Zyra",
-	            },
-	    Support = {
-	        "Alistar", "Blitzcrank", "Janna", "Karma", "Leona", "Lulu", "Nami", "Nunu", "Sona", "Soraka", "Taric", "Thresh", "Zilean",
-	                },
-	    Tank = {
-	        "Amumu", "Chogath", "DrMundo", "Galio", "Hecarim", "Malphite", "Maokai", "Nasus", "Rammus", "Sejuani", "Nautilus", "Shen", "Singed", "Skarner", "Volibear",
-	        "Warwick", "Yorick", "Zac",
-	            },
-	    AD_Carry = {
-	        "Ashe", "Caitlyn", "Corki", "Draven", "Ezreal", "Graves", "Jayce", "Jinx", "KogMaw", "Lucian", "MasterYi", "MissFortune", "Pantheon", "Quinn", "Shaco", "Sivir",
-	        "Talon","Tryndamere", "Tristana", "Twitch", "Urgot", "Varus", "Vayne", "Yasuo","Zed", 
-	                },
-	    Bruiser = {
-	        "Aatrox", "Darius", "Elise", "Fiora", "Gangplank", "Garen", "Irelia", "JarvanIV", "Jax", "Khazix", "LeeSin", "Nocturne", "Olaf", "Poppy",
-	        "Renekton", "Rengar", "Riven", "Rumble", "Shyvana", "Trundle", "Udyr", "Vi", "MonkeyKing", "XinZhao",
-	            },
-        }
-				if heroManager.iCount < 10 then -- borrowed from Sidas Auto Carry, modified to 3v3
-        PrintChat(" >> Too few champions to arrange priority")
-	elseif heroManager.iCount == 6 and TTMAP then
-		ArrangeTTPrioritys()
-    else
-        ArrangePrioritys()
-    end
+		
 				
         ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190, DAMAGE_PHYSICAL, true)
         ts.name = "Zed"
@@ -114,10 +85,6 @@ function LoadVariables()
         green = ARGB(255,0,255,0)
         blue = ARGB(255,0,0,255)
         red = ARGB(255,255,0,0)
-				MyMana = nil
-				QMana = nil
-				WMana = nil
-				EMana = nil
 end
  
 function OnUnload()
