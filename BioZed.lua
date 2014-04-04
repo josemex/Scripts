@@ -35,28 +35,62 @@ end
 function LoadMenu()
         Config = scriptConfig("BioZed by Lucas", "Die")
 				
-        Config:addParam("Fight", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-        Config:addParam("Harass", "Harass", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("T"))
-	Config:addSubMenu("Combo Settings", "ComboS")
-               Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-               Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
-               
-	Config:addSubMenu("Ignite Settings", "lignite")    
-               Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Combo"})
-               Config.lignite:permaShow("igniteOptions")
-	       Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
+  Config:addParam("Fight", "BioCombo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+	Config:addSubMenu("BioZed - Combo Settings", "ComboS")
+  Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
+  Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
+	
+			Config:addSubMenu("BioZed - Harass Settings", "harass")
+		Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
+		Config.harass:addParam("mode", "Mode: 1=Q-W-E, 2=Q-W, 3=Q", SCRIPT_PARAM_SLICE, 1, 1, 3, 0)
+		Config.harass:permaShow("harassKey")
+	
+	Config:addSubMenu("BioZed - Ignite Settings", "lignite")    
+  Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Combo"})
+  Config.lignite:permaShow("igniteOptions")
+	Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
 	       
-	Config:addSubMenu("Drawings", "draw")
+	Config:addSubMenu("BioZed - Drawing Setting", "draw")
                Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
                Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
                Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
                
-	Config:addSubMenu("Misc", "lmisc")
+	Config:addSubMenu("BioZed - Misc", "lmisc")
 		Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
 		Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
-				
+		
         Config:permaShow("Fight")
-        Config:permaShow("Harass")
+				
+				priorityTable = {
+	    AP = {
+	        "Annie", "Ahri", "Akali", "Anivia", "Annie", "Brand", "Cassiopeia", "Diana", "Evelynn", "FiddleSticks", "Fizz", "Gragas", "Heimerdinger", "Karthus",
+	        "Kassadin", "Katarina", "Kayle", "Kennen", "Leblanc", "Lissandra", "Lux", "Malzahar", "Mordekaiser", "Morgana", "Nidalee", "Orianna",
+	        "Ryze", "Sion", "Swain", "Syndra", "Teemo", "TwistedFate", "Veigar", "Viktor", "Vladimir", "Xerath", "Ziggs", "Zyra",
+	            },
+	    Support = {
+	        "Alistar", "Blitzcrank", "Janna", "Karma", "Leona", "Lulu", "Nami", "Nunu", "Sona", "Soraka", "Taric", "Thresh", "Zilean",
+	                },
+	    Tank = {
+	        "Amumu", "Chogath", "DrMundo", "Galio", "Hecarim", "Malphite", "Maokai", "Nasus", "Rammus", "Sejuani", "Nautilus", "Shen", "Singed", "Skarner", "Volibear",
+	        "Warwick", "Yorick", "Zac",
+	            },
+	    AD_Carry = {
+	        "Ashe", "Caitlyn", "Corki", "Draven", "Ezreal", "Graves", "Jayce", "Jinx", "KogMaw", "Lucian", "MasterYi", "MissFortune", "Pantheon", "Quinn", "Shaco", "Sivir",
+	        "Talon","Tryndamere", "Tristana", "Twitch", "Urgot", "Varus", "Vayne", "Yasuo","Zed", 
+	                },
+	    Bruiser = {
+	        "Aatrox", "Darius", "Elise", "Fiora", "Gangplank", "Garen", "Irelia", "JarvanIV", "Jax", "Khazix", "LeeSin", "Nocturne", "Olaf", "Poppy",
+	        "Renekton", "Rengar", "Riven", "Rumble", "Shyvana", "Trundle", "Udyr", "Vi", "MonkeyKing", "XinZhao",
+	            },
+        }
+				if heroManager.iCount < 10 then -- borrowed from Sidas Auto Carry, modified to 3v3
+        PrintChat(" >> Too few champions to arrange priority")
+	elseif heroManager.iCount == 6 and TTMAP then
+		ArrangeTTPrioritys()
+    else
+        ArrangePrioritys()
+    end
+				
         ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190, DAMAGE_PHYSICAL, true)
         ts.name = "Zed"
         Config:addTS(ts)
@@ -80,6 +114,10 @@ function LoadVariables()
         green = ARGB(255,0,255,0)
         blue = ARGB(255,0,0,255)
         red = ARGB(255,255,0,0)
+				MyMana = nil
+				QMana = nil
+				WMana = nil
+				EMana = nil
 end
  
 function OnUnload()
@@ -88,8 +126,15 @@ end
  
 function OnTick()
         ts:update()
+				QMana = myHero:GetSpellData(_Q).mana
+        WMana = myHero:GetSpellData(_W).mana
+        EMana = myHero:GetSpellData(_E).mana
+        RMana = myHero:GetSpellData(_R).mana
+        MyMana = myHero.mana
 	Calculations()
 	GlobalInfos()
+	HarassKey = Config.harass.harassKey
+	if HarassKey then Harass() end
         for i = 1, heroManager.iCount, 1 do
         local enemyhero = heroManager:getHero(i)
                 if enemyhero.team ~= myHero.team and TargetHaveBuff("zedulttargetmark", enemyhero) then        
@@ -101,13 +146,12 @@ function OnTick()
         if Config.lmisc.AutoE then autoE() end
         prediction = qPred()
         if Config.Fight then Fight() end
-        if Config.Harass then Harass() end
 	if Config.lignite.autoIgnite then autoIgnite() end
         end
         if ts.target == nil and Config.Fight and Config.lmisc.Movement then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
-	if ts.target == nil and Config.Harass and Config.lmisc.Movement then
+	if ts.target == nil and Config.harass.harassKey and Config.lmisc.Movement then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
 end
@@ -233,7 +277,17 @@ function Fight()
                         end
                 end
         end
-        
+        if MyMana > (QMana + WMana + EMana) then
+				CastSpell(_W, ts.target.x, ts.target.z)
+				else
+				if QREADY and WREADY and EREADY then
+				if MyMana > (QMana + EMana) then
+				CastSpell(_Q, prediction.x, prediction.z)
+				end
+				end
+				end
+				
+				
 				if Config.lignite.igniteOptions == 2 then
                                         if GetDistance(ts.target) <= 600 then
                                                 CastSpell(ignite, ts.target)
@@ -265,15 +319,34 @@ end
 end
  
 function Harass()
-        if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700)) or (QREADY and wClone ~= nil and wClone.valid and GetDistance(prediction, wClone) < 900) then
+if Config.harass.mode == 1 then
+if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700)) or (QREADY and wClone ~= nil and wClone.valid and GetDistance(prediction, wClone) < 900) then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
                         CastSpell(_W, ts.target.x, ts.target.z)
                 else
                         CastSpell(_Q, prediction.x, prediction.z)
                 end
-        elseif QREADY and not WREADY and prediction and (GetDistance(prediction) < 900) then
-                CastSpell(_Q, prediction.x, prediction.z)
-        end
+								end
+								end
+if Config.harass.mode == 2 then
+if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700)) then
+                if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
+                        CastSpell(_W)
+                else
+                        CastSpell(_Q, prediction.x, prediction.z)
+                end
+								end
+
+end
+
+if Config.harass.mode == 3 then
+if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700)) or (QREADY and wClone ~= nil and wClone.valid and GetDistance(prediction, wClone) < 900) then
+                if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
+
+                        CastSpell(_Q, prediction.x, prediction.z)
+end
+end
+end
 end
  
 function autoE()
@@ -317,13 +390,12 @@ function GlobalInfos()
         WMana = myHero:GetSpellData(_W).mana
         EMana = myHero:GetSpellData(_E).mana
         RMana = myHero:GetSpellData(_R).mana
-       
         MyMana = myHero.mana
        
         TemSlot = GetInventorySlotItem(3153)
         BOTRKREADY = (TemSlot ~= nil and myHero:CanUseSpell(TemSlot) == READY) --Blade Of The Ruined King
        
-        TemSlot = GetInventorySlotItem(3144)
+        TemSlot = GetInventorySlotItem(3144)	
         BCREADY = (TemSlot ~= nil and myHero:CanUseSpell(TemSlot) == READY) --Bilgewater Cutlass
        
         TemSlot = GetInventorySlotItem(3074)
