@@ -60,8 +60,6 @@ function LoadMenu()
 		Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
 		
         Config:permaShow("Fight")
-		
-				
         ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190, DAMAGE_PHYSICAL, true)
         ts.name = "Zed"
         Config:addTS(ts)
@@ -85,6 +83,10 @@ function LoadVariables()
         green = ARGB(255,0,255,0)
         blue = ARGB(255,0,0,255)
         red = ARGB(255,255,0,0)
+				myMana = nil
+				qMana = nil
+				wMana = nil
+				eMana = nil
 end
  
 function OnUnload()
@@ -93,11 +95,6 @@ end
  
 function OnTick()
         ts:update()
-				QMana = myHero:GetSpellData(_Q).mana
-        WMana = myHero:GetSpellData(_W).mana
-        EMana = myHero:GetSpellData(_E).mana
-        RMana = myHero:GetSpellData(_R).mana
-        MyMana = myHero.mana
 	Calculations()
 	GlobalInfos()
 	HarassKey = Config.harass.harassKey
@@ -303,7 +300,6 @@ if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700))
                         CastSpell(_Q, prediction.x, prediction.z)
                 end
 								end
-
 end
 
 if Config.harass.mode == 3 then
