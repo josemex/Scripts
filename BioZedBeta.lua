@@ -46,7 +46,7 @@ function LoadMenu()
         Config.harass:permaShow("harassKey")
     
     Config:addSubMenu("BioZed - Ignite Settings", "lignite")    
-  Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Combo"})
+  Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
   Config.lignite:permaShow("igniteOptions")
     Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
            
