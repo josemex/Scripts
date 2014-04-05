@@ -42,7 +42,7 @@ function LoadMenu()
     
             Config:addSubMenu("BioZed - Harass Settings", "harass")
         Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
-        Config.harass:addParam("mode", "Mode: 1=Q-W-E, 2=Q", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
+        Config.harass:addParam("mode", "Mode: 1=Q-W-E, 2=Q-W, 3=Q", SCRIPT_PARAM_SLICE, 1, 1, 3, 0)
         Config.harass:permaShow("harassKey")
     
     Config:addSubMenu("BioZed - Ignite Settings", "lignite")    
@@ -57,7 +57,7 @@ function LoadMenu()
                
     Config:addSubMenu("BioZed - Misc", "lmisc")
         Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
-        --Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
+        Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
         
         Config:permaShow("Fight")
         ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190, DAMAGE_PHYSICAL, true)
@@ -87,8 +87,6 @@ function LoadVariables()
                 qMana = nil
                 wMana = nil
                 eMana = nil
-        eRange = 280
-        qRange = 925
 end
  
 function OnUnload()
@@ -109,7 +107,7 @@ function OnTick()
         end
         SetCooldowns() 
         if ValidTarget(ts.target) then
-        --if Config.lmisc.AutoE then autoE() end
+        if Config.lmisc.AutoE then autoE() end
         prediction = qPred()
         if Config.Fight then Fight() end
     if Config.lignite.autoIgnite then autoIgnite() end
@@ -223,104 +221,96 @@ function OnProcessSpell(unit, spell)
 end
  
 function Fight()
-    if RREADY and MyMana > (QMana + WMana + EMana) then CastR(ts.target) end
-    if not RREADY or rClone ~= nil then
-            if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
-                    if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
-                            CastSpell(_W, ts.target.x, ts.target.z)
-                    end
-            end
-                            
-            if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then   
-                if EREADY then  
-                    CastE()
-                end                                                
-                if QREADY and GetDistance(ts.target, myHero) < qRange then 
-                    CastQ()
+  if RREADY then CastR(ts.target) end
+        if not RREADY or rClone ~= nil then
+                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
+                        if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
+                                CastSpell(_W, ts.target.x, ts.target.z)
+                        end
                 end
-            end
-    end
-    if MyMana > (QMana + WMana + EMana) then
-        CastSpell(_W, ts.target.x, ts.target.z)
-            if QREADY and EREADY then
-                CastQ()
-                CastE()
-            end
-    end
-                
-                
-    if Config.lignite.igniteOptions == 2 then
-        if GetDistance(ts.target) <= 600 then
-            CastSpell(ignite, ts.target)
+                                
+                if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then qPred()  
+                        if EREADY then  
+                                if ValidTarget(ts.target) then    
+                                       autoE()
+                                end
+                        end
+                                                
+                        if QREADY and prediction then 
+                                CastSpell(_Q, prediction.x, prediction.z)
+                        end
+                end
         end
-    end
-    CastItems(ts.target)
+        if MyMana > (QMana + WMana + EMana) then
+                CastSpell(_W, ts.target.x, ts.target.z)
+                else
+                if QREADY and WREADY and EREADY then
+                if MyMana > (QMana + EMana) then
+                    if QREADY and prediction then   CastSpell(_Q, prediction.x, prediction.z) end
+                end
+                end
+                end
+                
+                
+                if Config.lignite.igniteOptions == 2 then
+                                        if GetDistance(ts.target) <= 600 then
+                                                CastSpell(ignite, ts.target)
+                                                                              end
+                                                                                end
+        CastItems(ts.target)
 
 
-    if not QREADY and not EREADY then
-            local wDist = 0
-            local rDist = 0
-            if wClone and wClone.valid then wDist = GetDistance(ts.target, wClone) end
-            if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end     
-            if GetDistance(ts.target) > 125 then
-                    if wDist < rDist and wDist ~= 0 and GetDistance(ts.target) > wDist then
-                            CastSpell(_W)
-                    elseif rDist < wDist and rDist ~= 0 and GetDistance(ts.target) > rDist then
-                            CastSpell(_R)
-                                                            
-                    end
-            end
-    end
-            if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
-            CastSpell(_R)
-    end
-    if GetDistance(ts.target) < 190 then
-        myHero:Attack(ts.target)
-    end
+        if not QREADY and not EREADY then
+                local wDist = 0
+                local rDist = 0
+                if wClone and wClone.valid then wDist = GetDistance(ts.target, wClone) end
+                if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end     
+                if GetDistance(ts.target) > 125 then
+                        if wDist < rDist and wDist ~= 0 and GetDistance(ts.target) > wDist then
+                                CastSpell(_W)
+                        elseif rDist < wDist and rDist ~= 0 and GetDistance(ts.target) > rDist then
+                                CastSpell(_R)
+                                                                
+                        end
+                end
+        end
+                if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
+                CastSpell(_R)
+        end
+        if GetDistance(ts.target) < 190 then
+myHero:Attack(ts.target)
+end
 end
  
 function Harass()
-    -- if Config.harass.mode == 1 then
-    --     if (QREADY and WREADY and (GetDistance(ts.target, myHero) < 700)) or (QREADY and wClone ~= nil and wClone.valid and GetDistance(ts.target, wClone) < 900) then
-    --             if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
-    --                     CastSpell(_W, ts.target.x, ts.target.z)
-    --             else
-    --                     CastSpell(_Q, prediction.x, prediction.z)
-    --             end
-    --     end
-    -- end
-    if Config.harass.mode == 1 then
-        if QREADY and WREADY and (GetDistance(ts.target, myHero) < 700) then
-            if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
-                CastSpell(_W, ts.target.x, ts.target.z)
-            else
-                CastQ()
-                CastE()
-            end
-        end
-    end
-
-    if Config.harass.mode == 2 then
-        if QREADY and GetDistance(ts.target, myHero) < qRange then
-            CastQ()
-        end
-    end
+if Config.harass.mode == 1 then
+if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700)) or (QREADY and wClone ~= nil and wClone.valid and GetDistance(prediction, wClone) < 900) then
+                if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
+                        CastSpell(_W, ts.target.x, ts.target.z)
+                else
+                        CastSpell(_Q, prediction.x, prediction.z)
+                end
+                                end
+                                end
+if Config.harass.mode == 2 then
+if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700)) then
+                if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
+                        CastSpell(_W)
+                else
+                        CastSpell(_Q, prediction.x, prediction.z)
+                end
+                                end
 end
 
-function CastQ()
-     if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
-     local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
-        if HitChance >= 1 then
-            CastSpell(_Q, CastPosition.x, CastPosition.z)    
-        end
-    end
-end
+if Config.harass.mode == 3 then
+if prediction ~= nil and (QREADY and WREADY and (GetDistance(prediction) < 700)) or (QREADY and wClone ~= nil and wClone.valid and GetDistance(prediction, wClone) < 900) then
+                if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
 
-function CastE()
-    if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < eRange or GetDistance(ts.target, wClone) < eRange or GetDistance(ts.target, rClone) < eRange) then
-        CastSpell(_E)
-    end
-end 
+                        CastSpell(_Q, prediction.x, prediction.z)
+end
+end
+end
+end
  
 function autoE()
         local box = 280
