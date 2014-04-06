@@ -255,6 +255,7 @@ function Harass()
            
  end
  end
+end
  
 function CastQ()
      if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
