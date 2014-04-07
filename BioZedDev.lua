@@ -1,5 +1,5 @@
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.0<</font> ")
        require "VPrediction"
 end
  
@@ -576,7 +576,7 @@ end
 -- From Manciuzz's Orbwalk Script: http://pastebin.com/jufCeE0e
  
 function OrbWalking()
-    if TimeToAttack() and GetDistance(ts.target) <= 215 then
+    if TimeToAttack() and GetDistance(ts.target) <= 225 then
         myHero:Attack(ts.target)
     elseif heroCanMove() then
         moveToCursor()
