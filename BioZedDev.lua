@@ -1,14 +1,13 @@
-if myHero.charName ~= "Zed" then return end
 if VIP_USER then
        PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer<</font> ")
        require "VPrediction"
 end
-
+ 
 local RREADY, QREADY, WREADY, EREADY
 local prediction
 local VP
 local ts
-
+ 
 function OnLoad()
         ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190 ,DAMAGE_PHYSICAL)
         ts.name = "Zed"
@@ -25,14 +24,18 @@ function OnLoad()
         PrintFloatText(myHero,11,"LETS RAPE >:D !")
         if VIP_USER then
             VP = VPrediction()
-            
+           
         end
     EnemyMinions = minionManager(MINION_ENEMY, qRange, myHero, MINION_SORT_HEALTH_ASC)
        qEnergy = {75, 70, 65, 60, 55}
        wEnergy = {40, 35, 30, 25, 20}
        eCost = 50
+			 qDelay, qWidth, qRange, qSpeed = 0.25, 45, 900, 902
+		   wDelay, wWidth, wRange, wSpeed = 0.25, 40, 550, 1600
+			 wSwap = false
+			 wCast = false
 end
-
+ 
 function OnTick()
     ts:update()
     tstarget = ts.target
@@ -52,7 +55,7 @@ function OnTick()
                 end
      end
     --if Config.lmisc.AutoE then autoE() end
-     SetCooldowns() 
+     SetCooldowns()
      if Config.ComboS.Fight then Fight() end
      if Config.lfarm.farmKey then
             EnemyMinions:update()
@@ -66,18 +69,18 @@ function OnTick()
             end
         end
 end
-
+ 
 function OnUnload()
     PrintFloatText(myHero,9,"U NO RAPE ?! :,( ")
 end
-
+ 
 function LoadVariables()
         wClone, rClone = nil, nil
         RREADY, QREADY, WREADY, EREADY = false, false, false, false
         ignite = nil
         lastW = 0
         delay, qspeed = 235, 1.742
-                
+               
         --Helpers
         lastAttack, lastWindUpTime, lastAttackCD, lastAnimation  = 0, 0, 0, ""
         EnemyTable = {}
@@ -97,19 +100,19 @@ function LoadVariables()
         qRange = 925
         Target = nil
 end
-
+ 
 function LoadMenu()
      Config = scriptConfig("BioZed by Lucas and Pyr", "Die")
-     Config:addSubMenu("BioZed - Combo Settings", "ComboS")           
+     Config:addSubMenu("BioZed - Combo Settings", "ComboS")          
             Config.ComboS:addParam("Fight", "BioCombo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
             Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
             Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
-    
+   
      Config:addSubMenu("BioZed - Harass Settings", "harass")
         Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
-        Config.harass:addParam("mode", "Mode: 1=Q-W-E, 2=Q 3=Long Q", SCRIPT_PARAM_SLICE, 1, 1, 3, 0)
+        Config.harass:addParam("mode", "Mode: 1=Q-W-E, 2=Q", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
         Config.harass:permaShow("harassKey")
-    
+   
     Config:addSubMenu("BioZed - Ignite Settings", "lignite")    
            Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
            Config.lignite:permaShow("igniteOptions")
@@ -123,14 +126,14 @@ function LoadMenu()
     Config:addSubMenu("BioZed - Misc", "lmisc")
            Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
            Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
-
+ 
     Config:addSubMenu("BioZed - Farm", "lfarm")
           Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-        
+       
     Config.ComboS:permaShow("Fight")
     Config:addTS(ts)
 end
-
+ 
 function autoIgnite()
         if Config.lignite.autoIgnite then
                 if iReady then
@@ -147,7 +150,7 @@ function autoIgnite()
                 end
         end
 end
-
+ 
 function Fight()
        if Config.lmisc.Movement then
             if ts.target then
@@ -157,7 +160,7 @@ function Fight()
             end
         end
     if ts.target then
-    
+   
         if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) end
         if not RREADY or rClone ~= nil then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
@@ -165,64 +168,63 @@ function Fight()
                                 CastSpell(_W, ts.target.x, ts.target.z)
                         end
                 end
-                                
-                if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then   
+                               
+                if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then  
                     if EREADY then  
                         CastE()
                     end                                                
-                    if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then 
+                    if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
                         CastQ()
                     end
                 end
         end
-                    
-                    
+                   
+                   
         if Config.lignite.igniteOptions == 2 then
             if GetDistance(ts.target) <= 600 then
                 CastSpell(ignite, ts.target)
             end
         end
         CastItems(ts.target)
-
-
+ 
+ 
         if not QREADY and not EREADY then
                 local wDist = 0
                 local rDist = 0
                 if wClone and wClone.valid then wDist = GetDistance(ts.target, wClone) end
-                if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end     
+                if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end    
                 if GetDistance(ts.target) > 125 then
                         if wDist < rDist and wDist ~= 0 and GetDistance(ts.target) > wDist then
                                 CastSpell(_W)
                         elseif rDist < wDist and rDist ~= 0 and GetDistance(ts.target) > rDist then
                                 CastSpell(_R)
-                                                                
+                                                               
                         end
                 end
         end
-                if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
+        if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
                 CastSpell(_R)
         end
         if ValidTarget(ts.target) then
             local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
             if UltDmg >= ts.target.health then
-                PrintChat("Gapclose")  
                 if GetDistance(ts.target, myHero) < 1125 then
-                local DashPos = myHero.visionPos + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
+                local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
                     if QREADY and EREADY and RREADY and not wClone and not rClone then
                         PrintChat("Gapclose")
                         CastSpell(_W, DashPos.x, DashPos.z)
                     end
-                    if wClone and wClone.valid and not rClone then 
-                        CastSpell(_W, myHero) 
+                    if wClone and wClone.valid and not rClone then
+                        CastSpell(_W, myHero)
                         CastSpell(_R, ts.target)
                     end
-                    
+                   
                 end
             end
         end
     end
 end
-
+ 
 function Harass()
     if Config.lmisc.Movement then
         if ts.target then
@@ -242,67 +244,22 @@ function Harass()
             if not WREADY then CastQ() end
             CastE()
         end
+        else
+        if QREADY and GetDistance(ts.target, myHero) > qRange and GetDistance(ts.target, myHero) < qRange+wRange and not wclone then
+                    CastSpell(_W, ts.target.x, ts.target.z)
 
+        elseif  wClone and wClone.valid then CastQ() 
+        end
+ 
         if Config.harass.mode == 2 then
             if QREADY and GetDistance(ts.target, myHero) < qRange then
                 CastQ()
             end
         end
-        if Config.harass.mode == 3 and canCombo("qw") then
-           if QREADY and GetDistance(ts.target, myHero) > qRange then
-             CastW(Target.visionPos, wRange + qRange)
-            else
-             CastQ()
-           end
-        end
-            
-
-    end
-end
-
-function canCombo(combo)
-        local qLevel = myHero:GetSpellData(_Q).level
-        local wLevel = myHero:GetSpellData(_W).level
-        local eLevel = myHero:GetSpellData(_E).level
-        local energy = myHero.mana
-        if combo == ("qwe" or "qw" or "qe") and (qLevel < 1 or not QREADY) then return false 
-        else qCost = qEnergy[qLevel] end
-        if combo == ("qwe" or "qw" or "we" or "w") and (wLevel < 1 or wCast or not wReady) then return false 
-        else wCost = wEnergy[wLevel] end
-        if combo == ("qwe" or "we" or "qe") and (eLevel < 1 or not eReady) then return false end
-        
-        if combo == "qwe" and energy >= (qCost + wCost + eCost) then 
-            return true
-            elseif combo == "qw" and energy >= (qCost + wCost) then 
-            return true
-            elseif combo == "we" and energy >= (wCost + eCost) then 
-            return true
-            elseif combo == "qe" and energy >= (qCost + eCost) then
-            return true
-            elseif combo == "q" and energy >= qCost then 
-            return true
-            elseif combo == "e" and energy >= eCost then 
-            return true
-            elseif combo == "w" and energy >= wCost then 
-            return true
-        else
-            return false
-        end
-    end       
-
-function OnProcessSpell(unit, spell)
-        if unit.isMe and spell.name == "ZedShadowDash" then
-                lastW = GetTickCount()
-        end
-        if object == myHero then
-            if spell.name:lower():find("attack") then
-            lastAttack = GetTickCount() - GetLatency()/2
-            lastWindUpTime = spell.windUpTime*1000
-            lastAttackCD = spell.animationTime*1000
-            end
-    end
-end
-
+           
+ end
+ end
+ 
 function CastQ()
      if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
@@ -312,12 +269,19 @@ function CastQ()
     end
 end
 
+function CastW(tar, tarRange)
+		local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(tar, wDelay, wWidth, tarRange, wSpeed, myHero.visionPos, false)
+		if HitChance >= 2 and GetDistance(myHero.visionPos, CastPosition) <= tarRange then
+			CastSpell(_W, CastPosition.x, CastPosition.z)
+		end
+	end
+	
 function CastE()
     if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < eRange or GetDistance(ts.target, wClone) < eRange or GetDistance(ts.target, rClone) < eRange) then
         CastSpell(_E, myHero)
     end
-end 
-
+end
+ 
 function autoE()
         local box = 280
         if GetDistance(ts.target, myHero) < box or (wClone ~= nil and wClone.valid and GetDistance(ts.target, wClone) < box) or (rClone ~= nil and rClone.valid and GetDistance(ts.target, rClone) < box) then
@@ -331,7 +295,7 @@ function autoE()
                 end
         end
 end
-
+ 
 function CastR()
        if not RREADY then return end
         if ValidTarget(ts.target) then
@@ -350,7 +314,7 @@ function rUsed()
                 return false
         end
 end
-
+ 
 function GlobalInfos()
         QREADY = (myHero:CanUseSpell(_Q) == READY)
         WREADY = (myHero:CanUseSpell(_W) == READY)
@@ -376,7 +340,7 @@ function GlobalInfos()
        
         iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
 end
-
+ 
 function OnCreateObj(obj)
         if obj.valid and obj.name:find("Zed_Clone_idle.troy") then
                 if wClone == nil then
@@ -408,7 +372,7 @@ function SetCooldowns()
         RREADY = (myHero:CanUseSpell(_R) == READY)
         iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
 end
-
+ 
 function CastItems(target)
         if not ValidTarget(target) then
                 return
@@ -433,7 +397,7 @@ function CastItems(target)
                 end
         end
 end
-
+ 
 function Calculations()
        
         for i=1, EnemysInTable do
@@ -567,9 +531,9 @@ function Calculations()
                 end    
         end
 end
-
+ 
 --CallBacks--
-
+ 
 function OnCreateObj(obj)
         if obj.valid and obj.name:find("Zed_Clone_idle.troy") then
                 if wUsed and wClone == nil then
@@ -583,7 +547,7 @@ end
 function OnDeleteObj(obj)
         if obj.valid and wClone and obj == wClone then
                 wUsed = false
-                wClone = nil   
+                wClone = nil  
         elseif obj.valid and rClone and obj == rClone then
                 rClone = nil
         end
@@ -593,6 +557,7 @@ function OnProcessSpell(unit, spell)
         if unit.isMe and spell.name == "ZedShadowDash" then
                 wUsed = true
                 lastW = GetTickCount()
+				        wCast = true
         end
         if object == myHero then
                 if spell.name:lower():find("attack") then
@@ -602,14 +567,14 @@ function OnProcessSpell(unit, spell)
                 end
         end
 end
- 
+
  
 function OnAnimation(unit, animationName)
         if unit.isMe and lastAnimation ~= animationName then lastAnimation = animationName end
-end 
-
+end
+ 
 -- From Manciuzz's Orbwalk Script: http://pastebin.com/jufCeE0e
-
+ 
 function OrbWalking()
     if TimeToAttack() and GetDistance(ts.target) <= 215 then
         myHero:Attack(ts.target)
@@ -617,22 +582,22 @@ function OrbWalking()
         moveToCursor()
     end
 end
-
+ 
 function TimeToAttack()
     return (GetTickCount() + GetLatency()/2 > lastAttack + lastAttackCD)
 end
-
+ 
 function heroCanMove()
     return (GetTickCount() + GetLatency()/2 > lastAttack + lastWindUpTime + 20)
 end
-
+ 
 function moveToCursor()
     if GetDistance(mousePos) then
         local moveToPos = myHero + (Vector(mousePos) - myHero):normalized()*300
         myHero:MoveTo(moveToPos.x, moveToPos.z)
     end        
 end
-
+ 
 --Lagfree Circles by barasia, vadash and viseversa
 function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
     radius = radius or 300
@@ -646,11 +611,11 @@ function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
     end
     DrawLines2(points, width or 1, color or 4294967295)
 end
-
-function round(num) 
+ 
+function round(num)
     if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
 end
-
+ 
 function DrawCircle2(x, y, z, radius, color)
     local vPos1 = Vector(x, y, z)
     local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
@@ -660,17 +625,17 @@ function DrawCircle2(x, y, z, radius, color)
         DrawCircleNextLvl(x, y, z, radius, 1, color, 75)    
     end
 end
-
+ 
  
 function OnDraw()
  if Config.draw.Qdraw then
-
+ 
                         DrawCircle(myHero.x, myHero.y, myHero.z, 900, ARGB(255,255,0,0))
-
+ 
         end
         if Config.draw.Edraw then
                         DrawCircle(myHero.x, myHero.y, myHero.z, 290, ARGB(255,255,0,0))
-
+ 
         end
  
  
