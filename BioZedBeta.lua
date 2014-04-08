@@ -1,20 +1,16 @@
--- Zed Script --
-if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-        PrintChat("Dont forgot to give me feedback :)If u want to support me,VIP will be appreciated.")
-        PrintChat("<font color=\"#FF0000\" >>Zed By Lucas<</font> ")
-        require "VPrediction"
-else
-        PrintChat("<font color=\"#81BEF7\" >>Zed By Lucas<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.0<</font> ")
+       require "VPrediction"
 end
  
-local   RREADY, QREADY, WREADY, EREADY
-local   ts
-local   prediction
+local RREADY, QREADY, WREADY, EREADY
+local prediction
 local VP
-
+local ts
  
 function OnLoad()
+        ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190 ,DAMAGE_PHYSICAL)
+        ts.name = "Zed"
         LoadMenu()
         LoadVariables()
         Ignite()
@@ -28,51 +24,64 @@ function OnLoad()
         PrintFloatText(myHero,11,"LETS RAPE >:D !")
         if VIP_USER then
             VP = VPrediction()
-            
+           
+        end
+    EnemyMinions = minionManager(MINION_ENEMY, qRange, myHero, MINION_SORT_HEALTH_ASC)
+       qEnergy = {75, 70, 65, 60, 55}
+       wEnergy = {40, 35, 30, 25, 20}
+       eCost = 50
+			 qDelay, qWidth, qRange, qSpeed = 0.25, 45, 900, 902
+		   wDelay, wWidth, wRange, wSpeed = 0.25, 40, 550, 1600
+			 wSwap = false
+			 wCast = false
+end
+ 
+function OnTick()
+    ts:update()
+    tstarget = ts.target
+    if ValidTarget(tstarget) and tstarget.type == "obj_AI_Hero" then
+        Target = tstarget
+    else
+        Target = nil
+    end
+    Calculations()
+    GlobalInfos()
+    HarassKey = Config.harass.harassKey
+    if HarassKey then Harass() end
+    for i = 1, heroManager.iCount, 1 do
+        local enemyhero = heroManager:getHero(i)
+                if enemyhero.team ~= myHero.team and TargetHaveBuff("zedulttargetmark", enemyhero) then        
+                        ts.target = enemyhero
+                end
+     end
+    --if Config.lmisc.AutoE then autoE() end
+     SetCooldowns()
+     if Config.ComboS.Fight then Fight() end
+     if Config.lfarm.farmKey then
+            EnemyMinions:update()
+            for _, minion in pairs(EnemyMinions.objects) do
+                if minion.health <= getDmg("Q", minion, myHero) then
+                    if GetDistance(myHero.visionPos, minion) <= qRange then CastSpell(_Q, minion.x, minion.z) end
+                end
+                if minion.health <= getDmg("E", minion, myHero) then
+                    if GetDistance(myHero.visionPos, minion) <= eRange then CastSpell(_E, myHero) end
+                end
+            end
         end
 end
  
-function LoadMenu()
-        Config = scriptConfig("BioZed by Lucas", "Die")
-                
-  Config:addParam("Fight", "BioCombo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-    Config:addSubMenu("BioZed - Combo Settings", "ComboS")
-  Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-  Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
-    
-            Config:addSubMenu("BioZed - Harass Settings", "harass")
-        Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
-        Config.harass:addParam("mode", "Mode: 1=Q-W-E, 2=Q", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
-        Config.harass:permaShow("harassKey")
-    
-    Config:addSubMenu("BioZed - Ignite Settings", "lignite")    
-  Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
-  Config.lignite:permaShow("igniteOptions")
-    Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
-           
-    Config:addSubMenu("BioZed - Drawing Setting", "draw")
-               Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
-               Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
-               Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
-               
-    Config:addSubMenu("BioZed - Misc", "lmisc")
-        Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
-        --Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
-        
-        Config:permaShow("Fight")
-        ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190, DAMAGE_PHYSICAL, true)
-        ts.name = "Zed"
-        Config:addTS(ts)
+function OnUnload()
+    PrintFloatText(myHero,9,"U NO RAPE ?! :,( ")
 end
  
 function LoadVariables()
         wClone, rClone = nil, nil
-    RREADY, QREADY, WREADY, EREADY = false, false, false, false
+        RREADY, QREADY, WREADY, EREADY = false, false, false, false
         ignite = nil
         lastW = 0
         delay, qspeed = 235, 1.742
-                
-                        --Helpers
+               
+        --Helpers
         lastAttack, lastWindUpTime, lastAttackCD, lastAnimation  = 0, 0, 0, ""
         EnemyTable = {}
         EnemysInTable = 0
@@ -83,42 +92,48 @@ function LoadVariables()
         green = ARGB(255,0,255,0)
         blue = ARGB(255,0,0,255)
         red = ARGB(255,255,0,0)
-                myMana = nil
-                qMana = nil
-                wMana = nil
-                eMana = nil
+        myMana = nil
+        qMana = nil
+        wMana = nil
+        eMana = nil
         eRange = 280
         qRange = 925
         Target = nil
 end
  
-function OnUnload()
-        PrintFloatText(myHero,9,"U NO RAPE ?! :,( ")
+function LoadMenu()
+     Config = scriptConfig("BioZed by Lucas and Pyr", "Die")
+     Config:addSubMenu("BioZed - Combo Settings", "ComboS")          
+            Config.ComboS:addParam("Fight", "BioCombo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+            Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
+            Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
+   
+     Config:addSubMenu("BioZed - Harass Settings", "harass")
+        Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
+        Config.harass:addParam("mode", "Mode: 1=Q-W-E, 2=Q", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
+        Config.harass:permaShow("harassKey")
+   
+    Config:addSubMenu("BioZed - Ignite Settings", "lignite")    
+           Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
+           Config.lignite:permaShow("igniteOptions")
+           Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
+           
+    Config:addSubMenu("BioZed - Drawing Setting", "draw")
+           Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
+           Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
+           Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
+               
+    Config:addSubMenu("BioZed - Misc", "lmisc")
+           Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
+           Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
+ 
+    Config:addSubMenu("BioZed - Farm", "lfarm")
+          Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+       
+    Config.ComboS:permaShow("Fight")
+    Config:addTS(ts)
 end
  
-function OnTick()
-    if ValidTarget(ts.arget) and ts.target.type == "obj_AI_Hero" then
-        Target = ts.target
-    else
-        Target = nil
-    end
-        ts:update()
-    Calculations()
-    GlobalInfos()
-    HarassKey = Config.harass.harassKey
-    if HarassKey then Harass() end
-        for i = 1, heroManager.iCount, 1 do
-        local enemyhero = heroManager:getHero(i)
-                if enemyhero.team ~= myHero.team and TargetHaveBuff("zedulttargetmark", enemyhero) then        
-                        ts.target = enemyhero
-                end
-        end
-        SetCooldowns() 
-        --if Config.lmisc.AutoE then autoE() end
-        if Config.Fight then Fight() end
-        Target = ts.target
-end
-
 function autoIgnite()
         if Config.lignite.autoIgnite then
                 if iReady then
@@ -135,96 +150,6 @@ function autoIgnite()
                 end
         end
 end
-
---Lagfree Circles by barasia, vadash and viseversa
-function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
-    radius = radius or 300
-        quality = math.max(8,round(180/math.deg((math.asin((chordlength/(2*radius)))))))
-        quality = 2 * math.pi / quality
-        radius = radius*.92
-    local points = {}
-    for theta = 0, 2 * math.pi + quality, quality do
-        local c = WorldToScreen(D3DXVECTOR3(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
-        points[#points + 1] = D3DXVECTOR2(c.x, c.y)
-    end
-    DrawLines2(points, width or 1, color or 4294967295)
-end
-
-function round(num) 
-    if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
-end
-
-function DrawCircle2(x, y, z, radius, color)
-    local vPos1 = Vector(x, y, z)
-    local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
-    local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
-    local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
-    if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
-        DrawCircleNextLvl(x, y, z, radius, 1, color, 75)    
-    end
-end
-
- 
-function OnDraw()
- if Config.draw.Qdraw then
-
-                        DrawCircle(myHero.x, myHero.y, myHero.z, 900, ARGB(255,255,0,0))
-
-        end
-        if Config.draw.Edraw then
-                        DrawCircle(myHero.x, myHero.y, myHero.z, 290, ARGB(255,255,0,0))
-
-        end
- 
- 
-        if Config.draw.DmgIndic then
-                for i=1, EnemysInTable do
-                        local enemy = EnemyTable[i].hero
-                        if ValidTarget(enemy) then
---                              enemy.barData = GetEnemyBarData()
-                                local barPos = WorldToScreen(D3DXVECTOR3(enemy.x, enemy.y, enemy.z))
-                local PosX = barPos.x - 35
-                local PosY = barPos.y - 50
---                              local barPosOffset = GetUnitHPBarOffset(enemy)
---                              local barOffset = { x = enemy.barData.PercentageOffset.x, y = enemy.barData.PercentageOffset.y }
---                              local barPosPercentageOffset = { x = enemy.barData.PercentageOffset.x, y = enemy.barData.PercentageOffset.y }
---                              local BarPosOffsetX = 171
---                              local BarPosOffsetY = 46
---                              local CorrectionY =  14.5
---                              local StartHpPos = 31
---                              local IndicatorPos = EnemyTable[i].IndicatorPos
-                                local Text = EnemyTable[i].IndicatorText
---                              barPos.x = barPos.x + (barPosOffset.x - 0.5 + barPosPercentageOffset.x) * BarPosOffsetX + StartHpPos
---                              barPos.y = barPos.y + (barPosOffset.y - 0.5 + barPosPercentageOffset.y) * BarPosOffsetY + CorrectionY
-                                if EnemyTable[i].NotReady == true then
-               
-                                        DrawText(tostring(Text),15,PosX ,PosY  ,orange)
---                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y ,orange)
---                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y-9 ,orange)
---                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y-18 ,orange)
-                                else
-                                        DrawText(tostring(Text),15,PosX ,PosY ,ARGB(255,0,255,0))      
---                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y ,ARGB(255,0,255,0))
---                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y-9 ,ARGB(255,0,255,0))
---                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y-18 ,ARGB(255,0,255,0))
-                                end
-                        end
-                end
-        end
-end
- 
-function OnProcessSpell(unit, spell)
-        if unit.isMe and spell.name == "ZedShadowDash" then
-                lastW = GetTickCount()
-        end
-        if object == myHero then
-            if spell.name:lower():find("attack") then
-            lastAttack = GetTickCount() - GetLatency()/2
-            lastWindUpTime = spell.windUpTime*1000
-            lastAttackCD = spell.animationTime*1000
-            end
-    end
-end
  
 function Fight()
        if Config.lmisc.Movement then
@@ -235,7 +160,7 @@ function Fight()
             end
         end
     if ts.target then
-    
+   
         if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) end
         if not RREADY or rClone ~= nil then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
@@ -243,58 +168,57 @@ function Fight()
                                 CastSpell(_W, ts.target.x, ts.target.z)
                         end
                 end
-                                
-                if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then   
+                               
+                if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then  
                     if EREADY then  
                         CastE()
                     end                                                
-                    if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then 
+                    if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
                         CastQ()
                     end
                 end
         end
-                    
-                    
+                   
+                   
         if Config.lignite.igniteOptions == 2 then
             if GetDistance(ts.target) <= 600 then
                 CastSpell(ignite, ts.target)
             end
         end
         CastItems(ts.target)
-
-
+ 
+ 
         if not QREADY and not EREADY then
                 local wDist = 0
                 local rDist = 0
                 if wClone and wClone.valid then wDist = GetDistance(ts.target, wClone) end
-                if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end     
+                if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end    
                 if GetDistance(ts.target) > 125 then
                         if wDist < rDist and wDist ~= 0 and GetDistance(ts.target) > wDist then
                                 CastSpell(_W)
                         elseif rDist < wDist and rDist ~= 0 and GetDistance(ts.target) > rDist then
                                 CastSpell(_R)
-                                                                
+                                                               
                         end
                 end
         end
-                if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
+        if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
                 CastSpell(_R)
         end
         if ValidTarget(ts.target) then
             local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
             if UltDmg >= ts.target.health then
-                PrintChat("Gapclose")  
                 if GetDistance(ts.target, myHero) < 1125 then
                 local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
                     if QREADY and EREADY and RREADY and not wClone and not rClone then
                         PrintChat("Gapclose")
                         CastSpell(_W, DashPos.x, DashPos.z)
                     end
-                    if wClone and wClone.valid and not rClone then 
-                        CastSpell(_W) 
+                    if wClone and wClone.valid and not rClone then
+                        CastSpell(_W, myHero)
                         CastSpell(_R, ts.target)
                     end
-                    
+                   
                 end
             end
         end
@@ -320,15 +244,22 @@ function Harass()
             if not WREADY then CastQ() end
             CastE()
         end
+        else
+        if QREADY and GetDistance(ts.target, myHero) > qRange and GetDistance(ts.target, myHero) < qRange+wRange and not wclone then
+                    CastSpell(_W, ts.target.x, ts.target.z)
 
+        elseif  wClone and wClone.valid then CastQ() 
+        end
+ 
         if Config.harass.mode == 2 then
             if QREADY and GetDistance(ts.target, myHero) < qRange then
                 CastQ()
             end
         end
-    end
-end
-
+           
+ end
+ end
+ 
 function CastQ()
      if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
@@ -338,11 +269,18 @@ function CastQ()
     end
 end
 
+function CastW(tar, tarRange)
+		local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(tar, wDelay, wWidth, tarRange, wSpeed, myHero.visionPos, false)
+		if HitChance >= 2 and GetDistance(myHero.visionPos, CastPosition) <= tarRange then
+			CastSpell(_W, CastPosition.x, CastPosition.z)
+		end
+	end
+	
 function CastE()
     if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < eRange or GetDistance(ts.target, wClone) < eRange or GetDistance(ts.target, rClone) < eRange) then
-        CastSpell(_E)
+        CastSpell(_E, myHero)
     end
-end 
+end
  
 function autoE()
         local box = 280
@@ -376,7 +314,7 @@ function rUsed()
                 return false
         end
 end
-
+ 
 function GlobalInfos()
         QREADY = (myHero:CanUseSpell(_Q) == READY)
         WREADY = (myHero:CanUseSpell(_W) == READY)
@@ -402,21 +340,6 @@ function GlobalInfos()
        
         iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
 end
-function CastItems(target)
-        if not ValidTarget(target) then
-                return
-        else
-                if GetDistance(Target) <=500 then
-                        CastItem(3144, target) --Bilgewater Cutlass
-                        CastItem(3153, target) --Blade Of The Ruined King
-                end
-                if GetDistance(Target) <= 350 then
-                        CastItem(3074, target) --Ravenous Hydra
-                        CastItem(3077, target) --Tiamat
-                        CastItem(3142, target) --Youmuu's Ghostblade
-                end
-        end
-end  
  
 function OnCreateObj(obj)
         if obj.valid and obj.name:find("Zed_Clone_idle.troy") then
@@ -450,45 +373,11 @@ function SetCooldowns()
         iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
 end
  
-function qPred()
-        if VIP_USER then
-        local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero)
-            if HitChance > 1 then
-                return CastPosition
-            end
-        else                
-            local travelDuration = (delay + GetDistance(myHero, ts.target)/qspeed)
-            travelDuration = (delay + GetDistance(GetPredictionPos(ts.target, travelDuration))/qspeed)
-            travelDuration = (delay + GetDistance(GetPredictionPos(ts.target, travelDuration))/qspeed)
-            travelDuration = (delay + GetDistance(GetPredictionPos(ts.target, travelDuration))/qspeed)      
-            if ts.target ~= nil then
-                    return GetPredictionPos(ts.target, travelDuration)
-            end
-        end
-end
-function ArrangePrioritys()
-    for i, target in pairs(GetEnemyHeroes()) do
-        SetPriority(priorityTable.AD_Carry, target, 1)
-        SetPriority(priorityTable.AP, target, 2)
-        SetPriority(priorityTable.Support, target, 3)
-        SetPriority(priorityTable.Bruiser, target, 4)
-        SetPriority(priorityTable.Tank, target, 5)
-    end
-end
-
-function SetPriority(table, hero, priority)
-    for i=1, #table, 1 do
-        if hero.charName:find(table[i]) ~= nil then
-            TS_SetHeroPriority(priority, hero.charName)
-        end
-    end
-end
- 
 function CastItems(target)
         if not ValidTarget(target) then
                 return
         else
-                if GetDistance(ts.target) <=500 then
+                if GetDistance(ts.target) <=480 then
                         CastItem(3144, target) --Bilgewater Cutlass
                         CastItem(3153, target) --Blade Of The Ruined King
                 end
@@ -508,7 +397,7 @@ function CastItems(target)
                 end
         end
 end
-
+ 
 function Calculations()
        
         for i=1, EnemysInTable do
@@ -642,8 +531,9 @@ function Calculations()
                 end    
         end
 end
+ 
 --CallBacks--
-
+ 
 function OnCreateObj(obj)
         if obj.valid and obj.name:find("Zed_Clone_idle.troy") then
                 if wUsed and wClone == nil then
@@ -657,7 +547,7 @@ end
 function OnDeleteObj(obj)
         if obj.valid and wClone and obj == wClone then
                 wUsed = false
-                wClone = nil   
+                wClone = nil  
         elseif obj.valid and rClone and obj == rClone then
                 rClone = nil
         end
@@ -667,6 +557,7 @@ function OnProcessSpell(unit, spell)
         if unit.isMe and spell.name == "ZedShadowDash" then
                 wUsed = true
                 lastW = GetTickCount()
+				        wCast = true
         end
         if object == myHero then
                 if spell.name:lower():find("attack") then
@@ -676,33 +567,110 @@ function OnProcessSpell(unit, spell)
                 end
         end
 end
- 
+
  
 function OnAnimation(unit, animationName)
         if unit.isMe and lastAnimation ~= animationName then lastAnimation = animationName end
-end 
-
+end
+ 
 -- From Manciuzz's Orbwalk Script: http://pastebin.com/jufCeE0e
-
+ 
 function OrbWalking()
-    if TimeToAttack() and GetDistance(ts.target) <= 190 then
+    if TimeToAttack() and GetDistance(ts.target) <= 225 then
         myHero:Attack(ts.target)
     elseif heroCanMove() then
         moveToCursor()
     end
 end
-
+ 
 function TimeToAttack()
     return (GetTickCount() + GetLatency()/2 > lastAttack + lastAttackCD)
 end
-
+ 
 function heroCanMove()
     return (GetTickCount() + GetLatency()/2 > lastAttack + lastWindUpTime + 20)
 end
-
+ 
 function moveToCursor()
     if GetDistance(mousePos) then
         local moveToPos = myHero + (Vector(mousePos) - myHero):normalized()*300
         myHero:MoveTo(moveToPos.x, moveToPos.z)
     end        
+end
+ 
+--Lagfree Circles by barasia, vadash and viseversa
+function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
+    radius = radius or 300
+        quality = math.max(8,round(180/math.deg((math.asin((chordlength/(2*radius)))))))
+        quality = 2 * math.pi / quality
+        radius = radius*.92
+    local points = {}
+    for theta = 0, 2 * math.pi + quality, quality do
+        local c = WorldToScreen(D3DXVECTOR3(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
+        points[#points + 1] = D3DXVECTOR2(c.x, c.y)
+    end
+    DrawLines2(points, width or 1, color or 4294967295)
+end
+ 
+function round(num)
+    if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
+end
+ 
+function DrawCircle2(x, y, z, radius, color)
+    local vPos1 = Vector(x, y, z)
+    local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
+    local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
+    local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
+    if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
+        DrawCircleNextLvl(x, y, z, radius, 1, color, 75)    
+    end
+end
+ 
+ 
+function OnDraw()
+ if Config.draw.Qdraw then
+ 
+                        DrawCircle(myHero.x, myHero.y, myHero.z, 900, ARGB(255,255,0,0))
+ 
+        end
+        if Config.draw.Edraw then
+                        DrawCircle(myHero.x, myHero.y, myHero.z, 290, ARGB(255,255,0,0))
+ 
+        end
+ 
+ 
+        if Config.draw.DmgIndic then
+                for i=1, EnemysInTable, 1 do
+                        local enemy = EnemyTable[i].hero
+                        if ValidTarget(enemy) then
+--                              enemy.barData = GetEnemyBarData()
+                                local barPos = WorldToScreen(D3DXVECTOR3(enemy.x, enemy.y, enemy.z))
+                local PosX = barPos.x - 35
+                local PosY = barPos.y - 50
+--                              local barPosOffset = GetUnitHPBarOffset(enemy)
+--                              local barOffset = { x = enemy.barData.PercentageOffset.x, y = enemy.barData.PercentageOffset.y }
+--                              local barPosPercentageOffset = { x = enemy.barData.PercentageOffset.x, y = enemy.barData.PercentageOffset.y }
+--                              local BarPosOffsetX = 171
+--                              local BarPosOffsetY = 46
+--                              local CorrectionY =  14.5
+--                              local StartHpPos = 31
+--                              local IndicatorPos = EnemyTable[i].IndicatorPos
+                                local Text = EnemyTable[i].IndicatorText
+--                              barPos.x = barPos.x + (barPosOffset.x - 0.5 + barPosPercentageOffset.x) * BarPosOffsetX + StartHpPos
+--                              barPos.y = barPos.y + (barPosOffset.y - 0.5 + barPosPercentageOffset.y) * BarPosOffsetY + CorrectionY
+                                if EnemyTable[i].NotReady == true then
+               
+                                        DrawText(tostring(Text),15,PosX ,PosY  ,orange)
+--                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y ,orange)
+--                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y-9 ,orange)
+--                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y-18 ,orange)
+                                else
+                                        DrawText(tostring(Text),15,PosX ,PosY ,ARGB(255,0,255,0))      
+--                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y ,ARGB(255,0,255,0))
+--                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y-9 ,ARGB(255,0,255,0))
+--                                      DrawText("|",13,barPos.x+IndicatorPos ,barPos.y-18 ,ARGB(255,0,255,0))
+                                end
+                        end
+                end
+        end
 end
