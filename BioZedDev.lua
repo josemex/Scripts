@@ -243,7 +243,6 @@ function Harass()
             if wClone and wClone.valid then CastQ() end
             if not WREADY then CastQ() end
             CastE()
-        end
         else
         if QREADY and GetDistance(ts.target, myHero) > qRange and GetDistance(ts.target, myHero) < qRange+wRange and not wclone then
                     CastSpell(_W, ts.target.x, ts.target.z)
@@ -256,6 +255,7 @@ function Harass()
                 CastQ()
             end
         end
+    end
            
  end
  end
