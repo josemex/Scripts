@@ -160,7 +160,8 @@ function Fight()
             end
         end
     if ts.target then
-   
+        if not TargetHaveBuff("JudicatorIntervention", ts.target) and TargetHaveBuff("Undying Rage", ts.target) end
+        
         if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) end
         if not RREADY or rClone ~= nil then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
