@@ -61,11 +61,15 @@ function OnTick()
      if Config.lfarm.farmKey then
             EnemyMinions:update()
             for _, minion in pairs(EnemyMinions.objects) do
-                if minion.health <= getDmg("Q", minion, myHero) then
-                    if GetDistance(myHero.visionPos, minion) <= qRange then CastSpell(_Q, minion.x, minion.z) end
+                if Config.lfarm.farmQ then
+                    if minion.health <= getDmg("Q", minion, myHero) then
+                        if GetDistance(myHero.visionPos, minion) <= qRange then CastSpell(_Q, minion.x, minion.z) end
+                    end
                 end
-                if minion.health <= getDmg("E", minion, myHero) then
-                    if GetDistance(myHero.visionPos, minion) <= eRange then CastSpell(_E, myHero) end
+                if Config.lfarm.FarmE then
+                    if minion.health <= getDmg("E", minion, myHero) then
+                        if GetDistance(myHero.visionPos, minion) <= eRange then CastSpell(_E, myHero) end
+                    end
                 end
             end
         end
@@ -127,9 +131,13 @@ function LoadMenu()
     Config:addSubMenu("BioZed - Misc", "lmisc")
            Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
            Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
+           Config.lmisc:addParam("QSS", "QSS Usage", SCRIPT_PARAM_ONOFF, true)
  
     Config:addSubMenu("BioZed - Farm", "lfarm")
-          Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+          Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("X"))
+          Config.lfarm:addParam("farmQ", "Farm With Q", SCRIPT_PARAM_ONOFF, true)
+          Config.lfarm:addParam("FarmE", "Farm With E", SCRIPT_PARAM_ONOFF, true)
+          Config.lfarm:permaShow("farmKey")
        
     Config.ComboS:permaShow("Fight")
     Config:addTS(ts)
@@ -161,66 +169,69 @@ function Fight()
             end
         end
     if ts.target then
-        if not TargetHaveBuff("JudicatorIntervention", ts.target) and TargetHaveBuff("Undying Rage", ts.target) end
+        if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
         
-        if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) end
-        if not RREADY or rClone ~= nil then
-                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
-                        if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
-                                CastSpell(_W, ts.target.x, ts.target.z)
-                        end
-                end
-                               
-                if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then  
-                    if EREADY then  
-                        CastE()
-                    end                                                
-                    if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
-                        CastQ()
+            if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) end
+            if not RREADY or rClone ~= nil then
+                    if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
+                            if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
+                                    CastSpell(_W, ts.target.x, ts.target.z)
+                            end
                     end
-                end
-        end
-                   
-                   
-        if Config.lignite.igniteOptions == 2 then
-            if GetDistance(ts.target) <= 600 then
-                CastSpell(ignite, ts.target)
+                                   
+                    if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then  
+                        if EREADY then  
+                            CastE()
+                        end                                                
+                        if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
+                            CastQ()
+                        end
+                    end
             end
-        end
-        CastItems(ts.target)
- 
- 
-        if not QREADY and not EREADY then
-                local wDist = 0
-                local rDist = 0
-                if wClone and wClone.valid then wDist = GetDistance(ts.target, wClone) end
-                if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end    
-                if GetDistance(ts.target) > 125 then
-                        if wDist < rDist and wDist ~= 0 and GetDistance(ts.target) > wDist then
-                                CastSpell(_W)
-                        elseif rDist < wDist and rDist ~= 0 and GetDistance(ts.target) > rDist then
-                                CastSpell(_R)
-                                                               
-                        end
+                       
+                       
+            if Config.lignite.igniteOptions == 2 then
+                if iReady then
+                    if GetDistance(ts.target) <= 600 then
+                        CastSpell(ignite, ts.target)
+                    end
                 end
-        end
-        if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
-                CastSpell(_R)
-        end
-        if ValidTarget(ts.target) then
-            local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
-            if UltDmg >= ts.target.health then
-                if GetDistance(ts.target, myHero) < 1125 then
-                local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
-                    if QREADY and EREADY and RREADY and not wClone and not rClone then
-                        PrintChat("Gapclose")
-                        CastSpell(_W, DashPos.x, DashPos.z)
+            end
+            CastItems(ts.target)
+     
+     
+            if not QREADY and not EREADY then
+                    local wDist = 0
+                    local rDist = 0
+                    if wClone and wClone.valid then wDist = GetDistance(ts.target, wClone) end
+                    if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end    
+                    if GetDistance(ts.target) > 125 then
+                            if wDist < rDist and wDist ~= 0 and GetDistance(ts.target) > wDist then
+                                    CastSpell(_W)
+                            elseif rDist < wDist and rDist ~= 0 and GetDistance(ts.target) > rDist then
+                                    CastSpell(_R)
+                                                                   
+                            end
                     end
-                    if wClone and wClone.valid and not rClone then
-                        CastSpell(_W, myHero)
-                        CastSpell(_R, ts.target)
+            end
+            if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
+                    CastSpell(_R)
+            end
+            if ValidTarget(ts.target) then
+                local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
+                if UltDmg >= ts.target.health then
+                    if GetDistance(ts.target, myHero) < 1125 and GetDistance(ts.target, myHero) > 750 then
+                    local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
+                        if QREADY and EREADY and RREADY and not wClone and not rClone then
+                            --PrintChat("Gapclose")
+                            CastSpell(_W, DashPos.x, DashPos.z)
+                        end
+                        if wClone and wClone.valid and not rClone then
+                            CastSpell(_W, myHero)
+                            CastSpell(_R, ts.target)
+                        end
+                       
                     end
-                   
                 end
             end
         end
