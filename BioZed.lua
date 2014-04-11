@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.0<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.0.1<</font> ")
        require "VPrediction"
 end
  
@@ -73,6 +73,7 @@ function OnTick()
                 end
             end
         end
+    if Config.lmisc.qss then QSS() end  
 end
  
 function OnUnload()
@@ -131,6 +132,7 @@ function LoadMenu()
     Config:addSubMenu("BioZed - Misc", "lmisc")
            Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
            Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
+           Config.lmisc:addParam("qss", "QSS Usage", SCRIPT_PARAM_ONOFF, true)
  
     Config:addSubMenu("BioZed - Farm", "lfarm")
           Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("X"))
@@ -409,7 +411,16 @@ function CastItems(target)
                 end
         end
 end
- 
+
+function QSS()
+       if TargetHaveBuff("DeathMark", myHero) then
+       	CastItem(3139, myHero)
+       else
+       	CastItem(3140, myHero)
+       end
+end
+
+       	
 function Calculations()
        
         for i=1, EnemysInTable do
