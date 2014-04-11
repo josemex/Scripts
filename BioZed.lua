@@ -275,7 +275,7 @@ function Harass()
  end
  
 function CastQ()
-     if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
+     if ValidTarget(ts.target) and ((GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange)) then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
         if HitChance >= 1 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
