@@ -10,7 +10,7 @@ local VP
 local ts
  
 function OnLoad()
-        ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1500 ,DAMAGE_PHYSICAL)
+        ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 900 ,DAMAGE_PHYSICAL)
         ts.name = "Zed"
         LoadMenu()
         LoadVariables()
@@ -169,6 +169,11 @@ function autoIgnite()
 end
  
 function Fight()
+    if QREADY and EREADY and WREADY and RREADY then 
+        ts.range = 1200
+    else
+        ts.range = 900
+    end
        if Config.lmisc.Movement then
             if ts.target then
                 OrbWalking(ts.target)
@@ -247,6 +252,7 @@ function Fight()
 end
  
 function Harass()
+    ts.range = 1500
     if Config.lmisc.Movement then
         if ts.target then
             OrbWalking(ts.target)
