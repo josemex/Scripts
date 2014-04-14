@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.0<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.2<</font> ")
        require "VPrediction"
 end
  
@@ -10,7 +10,7 @@ local VP
 local ts
  
 function OnLoad()
-        ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 1190 ,DAMAGE_PHYSICAL)
+        ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 900 ,DAMAGE_PHYSICAL)
         ts.name = "Zed"
         LoadMenu()
         LoadVariables()
@@ -27,7 +27,7 @@ function OnLoad()
             VP = VPrediction()
            
         end
-    EnemyMinions = minionManager(MINION_ENEMY, qRange, myHero, MINION_SORT_HEALTH_ASC)
+    EnemyMinions = minionManager(MINION_ENEMY, 900, myHero, MINION_SORT_HEALTH_ASC)
        qEnergy = {75, 70, 65, 60, 55}
        wEnergy = {40, 35, 30, 25, 20}
        eCost = 50
@@ -73,7 +73,7 @@ function OnTick()
                 end
             end
         end
-    if Config.lmisc.qss then QSS() end  
+				if Config.lmisc.qss then QSS() end
 end
  
 function OnUnload()
@@ -103,8 +103,16 @@ function LoadVariables()
         wMana = nil
         eMana = nil
         eRange = 280
-        qRange = 925
         Target = nil
+        QREADY = nil
+        WREADY = nil
+        EREADY = nil
+        RREADY = nil
+        QMana = nil
+        WMana = nil
+        EMana = nil
+        RMana = nil
+        MyMana = nil
 end
  
 function LoadMenu()
@@ -116,8 +124,9 @@ function LoadMenu()
    
      Config:addSubMenu("BioZed - Harass Settings", "harass")
         Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
-        Config.harass:addParam("mode", "Mode: 1=Q-W-E, 2=Q", SCRIPT_PARAM_SLICE, 1, 1, 2, 0)
+        Config.harass:addParam("mode", "True = QWE, False = Q", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("V"))
         Config.harass:permaShow("harassKey")
+        Config.harass:permaShow("mode")
    
     Config:addSubMenu("BioZed - Ignite Settings", "lignite")    
            Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
@@ -132,7 +141,8 @@ function LoadMenu()
     Config:addSubMenu("BioZed - Misc", "lmisc")
            Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
            Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
-           Config.lmisc:addParam("qss", "QSS Usage", SCRIPT_PARAM_ONOFF, true)
+					 Config.lmisc:addParam("qss", "QSS Usage", SCRIPT_PARAM_ONOFF, true)
+
  
     Config:addSubMenu("BioZed - Farm", "lfarm")
           Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("X"))
@@ -162,6 +172,11 @@ function autoIgnite()
 end
  
 function Fight()
+    if QREADY and EREADY and WREADY and RREADY then 
+        ts.range = 1200
+    else
+        ts.range = 900
+    end
        if Config.lmisc.Movement then
             if ts.target then
                 OrbWalking(ts.target)
@@ -225,7 +240,7 @@ function Fight()
                     local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
                         if QREADY and EREADY and RREADY and not wClone and not rClone then
                             --PrintChat("Gapclose")
-                            CastSpell(_W, DashPos.x, DashPos.z)
+                             if myHero:GetSpellData(_W).name == "ZedShadowDash" then CastSpell(_W, DashPos.x, DashPos.z) end
                         end
                         if wClone and wClone.valid and not rClone then
                             CastSpell(_W, myHero)
@@ -240,6 +255,7 @@ function Fight()
 end
  
 function Harass()
+    ts.range = 1500
     if Config.lmisc.Movement then
         if ts.target then
             OrbWalking(ts.target)
@@ -248,23 +264,34 @@ function Harass()
         end
     end
     if ts.target then
-        if Config.harass.mode == 1 then
+        if Config.harass.mode then
             if QREADY and WREADY and (GetDistance(ts.target, myHero) < 700) then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
                     CastSpell(_W, ts.target.x, ts.target.z)
                 end
             end
             if wClone and wClone.valid then CastQ() end
-            if not WREADY then CastQ() end
+            if not WREADY then 
+                CastQ()
+                CastQClone()
+            end
             CastE()
-        else
-        if QREADY and GetDistance(ts.target, myHero) > qRange and GetDistance(ts.target, myHero) < qRange+wRange and not wclone then
-                    CastSpell(_W, ts.target.x, ts.target.z)
+            if GetDistance(ts.target, myHero) < 1450 and GetDistance(ts.target, myHero) > 900 then
+                local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
+                        if QREADY and WREADY then
+                            --PrintChat("Gapclose")
+                            if myHero:GetSpellData(_W).name == "ZedShadowDash" then CastSpell(_W, DashPos.x, DashPos.z) end
+                        end
+                        if wClone and wClone.valid then
+                            CastQClone()
+                        end
+                       
+            end
 
-        elseif  wClone and wClone.valid then CastQ() 
-        end
+        else
+       
  
-        if Config.harass.mode == 2 then
+        if not Config.harass.mode then
             if QREADY and GetDistance(ts.target, myHero) < qRange then
                 CastQ()
             end
@@ -277,6 +304,15 @@ function Harass()
 function CastQ()
      if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
+        if HitChance >= 1 then
+            CastSpell(_Q, CastPosition.x, CastPosition.z)    
+        end
+    end
+end
+
+function CastQClone()
+    if ValidTarget(ts.target) and GetDistance(ts.target, wClone) < qRange then
+     local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, wClone, false)
         if HitChance >= 1 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
         end
@@ -419,10 +455,17 @@ function QSS()
        	CastItem(3140, myHero)
        end
 end
-
-       	
+ 
 function Calculations()
-       
+        QREADY = (myHero:CanUseSpell(_Q) == READY)
+        WREADY = (myHero:CanUseSpell(_W) == READY)
+        EREADY = (myHero:CanUseSpell(_E) == READY)
+        RREADY = (myHero:CanUseSpell(_R) == READY)
+        QMana = myHero:GetSpellData(_Q).mana
+        WMana = myHero:GetSpellData(_W).mana
+        EMana = myHero:GetSpellData(_E).mana
+        RMana = myHero:GetSpellData(_R).mana
+        MyMana = myHero.mana
         for i=1, EnemysInTable do
                
                 local enemy = EnemyTable[i].hero
@@ -453,95 +496,52 @@ function Calculations()
                         EnemyTable[i].p = cpDmg
                        
                         EnemyTable[i].q = cqDmg
-                       
-                        if WillQCol then
-                                EnemyTable[i].q = EnemyTable[i].q / 2          
-                        end
-                        EnemyTable[i].q2 = EnemyTable[i].q + (cqDmg / 2)
-                       
+                                       
                         EnemyTable[i].e = ceDmg
+ 
                         if RREADY then
                                 UltExtraDmg = myHero.totalDamage
-                                if WREADY then
-                                        UltExtraDmg = UltExtraDmg + (15*myHero:GetSpellData(_R).level+5) * (EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg)
-                                else
-                                        UltExtraDmg = UltExtraDmg + (15*myHero:GetSpellData(_R).level+5) * (EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + caaDmg)
-                                end
+                                UltExtraDmg = UltExtraDmg + (15*myHero:GetSpellData(_R).level+5) * (EnemyTable[i].q + EnemyTable[i].e + caaDmg)
                                 UltExtraDmg = myHero:CalcDamage(enemy, UltExtraDmg)
                         end
                         EnemyTable[i].r = UltExtraDmg
                        
                        
-                        if enemy.health < EnemyTable[i].e  then
-                                EnemyTable[i].IndicatorText = "E Kill"
+ 
+                if enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + caaDmg then
+                                EnemyTable[i].IndicatorText = "WEQ Killable"
+                                EnemyTable[i].ComboType = 1
                                 EnemyTable[i].IndicatorPos = 0
-                        if not EReady then
-                                        EnemyTable[i].NotReady = true
-                                else
-                                        EnemyTable[i].NotReady = false
-                        end    
-                elseif enemy.health < EnemyTable[i].q then
-                                EnemyTable[i].IndicatorText = "Q Kill"
-                                EnemyTable[i].IndicatorPos = 0
-                        if not QREADY then
-                                        EnemyTable[i].NotReady = true
-                                else
-                                        EnemyTable[i].NotReady = false
-                        end    
-                elseif enemy.health < EnemyTable[i].q2 then
-                                EnemyTable[i].IndicatorText = "W+Q Kill"
-                                EnemyTable[i].IndicatorPos = 0
-                        if QMana + WMana > MyMana or not QREADY or not WREADY then
-                                        EnemyTable[i].NotReady = true
-                                else
-                                        EnemyTable[i].NotReady = false
-                        end            
-                elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e then
-                                EnemyTable[i].IndicatorText = "W+E+Q Kill"
-                                EnemyTable[i].IndicatorPos = 0
-                        if QMana + WMana + EMana > MyMana or not QREADY or not WREADY or not EREADY then
+                        if qMana + wMana + eMana > myMana or not qReady or not wReady or not eReady then
                                         EnemyTable[i].NotReady = true
                                 else
                                         EnemyTable[i].NotReady = false
                         end
-                --elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg then
-                                --EnemyTable[i].IndicatorText = "W+E+Q+AA Kill"
-                                --EnemyTable[i].IndicatorPos = 0
-                        --if QMana + WMana + EMana > MyMana or not QREADY or not WREADY or not EREADY then
-                                        --EnemyTable[i].NotReady = true
-                                --else
-                                        --EnemyTable[i].NotReady = false
-                        --end
-                elseif (not RREADY) and enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg + ciDmg + cItemDmg then
-                                EnemyTable[i].IndicatorText = "SBTW"
-                                EnemyTable[i].IndicatorPos = 0
-                        if (QMana + WMana + EMana > MyMana) or not QREADY or not WREADY or not EREADY then
-                                        EnemyTable[i].NotReady = true
-                                else
-                                        EnemyTable[i].NotReady = false
-                        end    
-                elseif (not WREADY) and enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
-                                EnemyTable[i].IndicatorText = "All In Kill"
-                                EnemyTable[i].IndicatorPos = 0
-                        if QMana + EMana > MyMana or not QREADY or not EREADY or not RREADY then
-                                        EnemyTable[i].NotReady = true
-                                else
-                                        EnemyTable[i].NotReady = false
-                        end
-                elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
+                elseif (not RREADY) and enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + caaDmg + ciDmg + cItemDmg then
                                 EnemyTable[i].IndicatorText = "Just Rape"
+                                EnemyTable[i].ComboType = 1
                                 EnemyTable[i].IndicatorPos = 0
-                        if QMana + WMana + EMana + RMana > MyMana or not QREADY or not WREADY or not EREADY or not RREADY then
+                        if qMana + wMana + eMana > myMana or not qReady or not wReady or not eReady then
                                         EnemyTable[i].NotReady = true
                                 else
                                         EnemyTable[i].NotReady = false
                         end
+                elseif (not WREADY) and enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
+                                EnemyTable[i].IndicatorText = "Just Do It"
+                                EnemyTable[i].ComboType = 2
+                                EnemyTable[i].IndicatorPos = 0
+                        if qMana + eMana + rMana > myMana or not qReady or not eReady or not rReady then
+                                        EnemyTable[i].NotReady = true
+                                else
+                                        EnemyTable[i].NotReady = false
+                        end    
                 else
-                        cTotal = cTotal + EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg
+                        cTotal = cTotal + EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg
                                
                                 HealthLeft = math.round(enemy.health - cTotal)
                                 PctLeft = math.round(HealthLeft / enemy.maxHealth * 100)
                                 BarPct = PctLeft / 103 * 100
+                                EnemyTable[i].ComboType = 0
                                 EnemyTable[i].Pct = PctLeft
                                 EnemyTable[i].IndicatorPos = BarPct
                                 EnemyTable[i].IndicatorText = PctLeft .. "% Harass"
@@ -551,7 +551,7 @@ function Calculations()
                                         EnemyTable[i].NotReady = false
                                 end
                 end
-                end    
+        end    
         end
 end
  
@@ -599,7 +599,7 @@ end
 -- From Manciuzz's Orbwalk Script: http://pastebin.com/jufCeE0e
  
 function OrbWalking()
-    if TimeToAttack() and GetDistance(ts.target) <= 225 then
+    if TimeToAttack() and GetDistance(ts.target) <= 235 then
         myHero:Attack(ts.target)
     elseif heroCanMove() then
         moveToCursor()
