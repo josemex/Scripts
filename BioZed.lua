@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.1<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.2<</font> ")
        require "VPrediction"
 end
  
@@ -97,10 +97,6 @@ function LoadVariables()
         green = ARGB(255,0,255,0)
         blue = ARGB(255,0,0,255)
         red = ARGB(255,255,0,0)
-        myMana = nil
-        qMana = nil
-        wMana = nil
-        eMana = nil
         eRange = 280
         Target = nil
         QREADY = nil
@@ -167,8 +163,25 @@ function autoIgnite()
                 end
         end
 end
+
+function Swap()
+    local wDist = nil
+    if ts.target then
+        if wClone and wClone.valid then 
+            wDist = GetDistance(ts.target, wClone) 
+        else
+            return false
+        end
+        if GetDistance(ts.target) > 150 then
+            if wDist and wDist ~= 0 and (GetDistance(ts.target, myHero) > wDist) and (myHero:CanUseSpell(_W) == READY) then
+            CastSpell(_W)
+            end
+        end
+    end
+end
  
 function Fight()
+    Swap()
     if QREADY and EREADY and WREADY and RREADY then 
         ts.range = 1200
     else
@@ -262,7 +275,7 @@ function Harass()
     end
     if ts.target then
         if Config.harass.mode then
-            if QREADY and WREADY and (GetDistance(ts.target, myHero) < 700) then
+            if QREADY and WREADY and (GetDistance(ts.target, myHero) < 700) and (MyMana > QMana+WMana+EMana) then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
                     CastSpell(_W, ts.target.x, ts.target.z)
                 end
@@ -275,8 +288,8 @@ function Harass()
             CastE()
             if GetDistance(ts.target, myHero) < 1450 and GetDistance(ts.target, myHero) > 900 then
                 local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
-                        if QREADY and WREADY then
-                            --PrintChat("Gapclose")
+                        if QREADY and WREADY and (MyMana > QMana+WMana) then
+                                                    --PrintChat("Gapclose")
                             if myHero:GetSpellData(_W).name == "ZedShadowDash" then CastSpell(_W, DashPos.x, DashPos.z) end
                         end
                         if wClone and wClone.valid then
