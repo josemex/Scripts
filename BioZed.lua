@@ -1,17 +1,52 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.21<</font> ")
-       require "VPrediction"
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.3<</font> ")
 end
  
 local RREADY, QREADY, WREADY, EREADY
 local prediction
 local VP
 local ts
+
+-- Lib Downloader --
+
+local REQUIRED_LIBS = {
+    ["VPrediction"] = "https://bitbucket.org/honda7/bol/raw/master/Common/VPrediction.lua",
+    ["SOW"] = "https://bitbucket.org/honda7/bol/raw/master/Common/SOW.lua",
+    ["SourceLib"] = "https://bitbucket.org/TheRealSource/public/raw/master/common/SourceLib.lua",
+                    }
+local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
+local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
+
+function AfterDownload()
+    DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
+    if DOWNLOAD_COUNT == 0 then
+        DOWNLOADING_LIBS = false
+        print("<b>Required libraries downloaded successfully, please reload (double F9).</b>")
+    end
+end
+
+for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
+    if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
+        require(DOWNLOAD_LIB_NAME)
+    else
+        DOWNLOADING_LIBS = true
+        DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
+        DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
+    end
+end
+
+if DOWNLOADING_LIBS then print("Downloading required libraries, please wait...") return end
+
+--
  
 function OnLoad()
         ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 900 ,DAMAGE_PHYSICAL)
         ts.name = "Zed"
+        if VIP_USER then
+            VP = VPrediction()
+        end
+        SOWi = SOW(VP)
         LoadMenu()
         LoadVariables()
         Ignite()
@@ -23,10 +58,6 @@ function OnLoad()
                 end
         end
         PrintFloatText(myHero,11,"LETS RAPE >:D !")
-        if VIP_USER then
-            VP = VPrediction()
-           
-        end
     EnemyMinions = minionManager(MINION_ENEMY, 900, myHero, MINION_SORT_HEALTH_ASC)
        qEnergy = {75, 70, 65, 60, 55}
        wEnergy = {40, 35, 30, 25, 20}
@@ -87,8 +118,7 @@ function LoadVariables()
         delay, qspeed = 235, 1.742
                
         --Helpers
-        lastAttack, lastWindUpTime, lastAttackCD, lastAnimation  = 0, 0, 0, ""
-        EnemyTable = {}
+               EnemyTable = {}
         EnemysInTable = 0
         HealthLeft = 0
         PctLeft = 0
@@ -134,14 +164,16 @@ function LoadMenu()
            Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
                
     Config:addSubMenu("BioZed - Misc", "lmisc")
-           Config.lmisc:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
            Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
  
     Config:addSubMenu("BioZed - Farm", "lfarm")
-          Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("X"))
+          Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
           Config.lfarm:addParam("farmQ", "Farm With Q", SCRIPT_PARAM_ONOFF, true)
           Config.lfarm:addParam("FarmE", "Farm With E", SCRIPT_PARAM_ONOFF, true)
           Config.lfarm:permaShow("farmKey")
+
+    Config:addSubMenu("BioZed - Orbwalking", "Orbwalking")
+        SOWi:LoadToMenu(Config.Orbwalking)
        
     Config.ComboS:permaShow("Fight")
     Config:addTS(ts)
@@ -173,7 +205,7 @@ function Swap()
             return false
         end
         if GetDistance(ts.target) > 150 then
-            if wDist and wDist ~= 0 and (GetDistance(ts.target, myHero) > wDist) and (myHero:CanUseSpell(_W) == READY) then
+            if wDist and wDist ~= 0 and (GetDistance(ts.target, myHero) > wDist) and (myHero:CanUseSpell(_W) == READY) and not EREADY then
             CastSpell(_W)
             end
         end
@@ -187,13 +219,6 @@ function Fight()
     else
         ts.range = 900
     end
-       if Config.lmisc.Movement then
-            if ts.target then
-                OrbWalking(ts.target)
-            else
-                moveToCursor()
-            end
-        end
     if ts.target then
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
         
@@ -266,13 +291,6 @@ end
  
 function Harass()
     ts.range = 1500
-    if Config.lmisc.Movement then
-        if ts.target then
-            OrbWalking(ts.target)
-        else
-            moveToCursor()
-        end
-    end
     if ts.target then
         if Config.harass.mode then
             if QREADY and WREADY and (GetDistance(ts.target, myHero) < 700) and (MyMana > QMana+WMana+EMana) then
@@ -627,43 +645,11 @@ function OnProcessSpell(unit, spell)
                 lastW = GetTickCount()
 				        wCast = true
         end
-        if object == myHero then
-                if spell.name:lower():find("attack") then
-                        lastAttack = GetTickCount() - GetLatency()/2
-                        lastWindUpTime = spell.windUpTime*1000
-                        lastAttackCD = spell.animationTime*1000
-                end
-        end
 end
 
  
 function OnAnimation(unit, animationName)
         if unit.isMe and lastAnimation ~= animationName then lastAnimation = animationName end
-end
- 
--- From Manciuzz's Orbwalk Script: http://pastebin.com/jufCeE0e
- 
-function OrbWalking()
-    if TimeToAttack() and GetDistance(ts.target) <= 235 then
-        myHero:Attack(ts.target)
-    elseif heroCanMove() then
-        moveToCursor()
-    end
-end
- 
-function TimeToAttack()
-    return (GetTickCount() + GetLatency()/2 > lastAttack + lastAttackCD)
-end
- 
-function heroCanMove()
-    return (GetTickCount() + GetLatency()/2 > lastAttack + lastWindUpTime + 20)
-end
- 
-function moveToCursor()
-    if GetDistance(mousePos) then
-        local moveToPos = myHero + (Vector(mousePos) - myHero):normalized()*300
-        myHero:MoveTo(moveToPos.x, moveToPos.z)
-    end        
 end
  
 --Lagfree Circles by barasia, vadash and viseversa
