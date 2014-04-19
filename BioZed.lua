@@ -7,6 +7,7 @@ local RREADY, QREADY, WREADY, EREADY
 local prediction
 local VP
 local ts
+local UltTargets = GetEnemyHeroes()
 
 -- Lib Downloader --
 
@@ -47,8 +48,8 @@ function OnLoad()
             VP = VPrediction()
         end
         SOWi = SOW(VP)
-        LoadMenu()
         LoadVariables()
+        LoadMenu()
         Ignite()
     for i=1, heroManager.iCount do
         local champ = heroManager:GetHero(i)
@@ -111,41 +112,46 @@ function OnUnload()
 end
  
 function LoadVariables()
-        wClone, rClone = nil, nil
-        RREADY, QREADY, WREADY, EREADY = false, false, false, false
-        ignite = nil
-        lastW = 0
-        delay, qspeed = 235, 1.742
-               
-        --Helpers
-               EnemyTable = {}
-        EnemysInTable = 0
-        HealthLeft = 0
-        PctLeft = 0
-        BarPct = 0
-        orange = 0xFFFFE303
-        green = ARGB(255,0,255,0)
-        blue = ARGB(255,0,0,255)
-        red = ARGB(255,255,0,0)
-        eRange = 280
-        Target = nil
-        QREADY = nil
-        WREADY = nil
-        EREADY = nil
-        RREADY = nil
-        QMana = nil
-        WMana = nil
-        EMana = nil
-        RMana = nil
-        MyMana = nil
+    wClone, rClone = nil, nil
+    RREADY, QREADY, WREADY, EREADY = false, false, false, false
+    ignite = nil
+    lastW = 0
+    delay, qspeed = 235, 1.742
+           
+    --Helpers
+    EnemyTable = {}
+    EnemysInTable = 0
+    HealthLeft = 0
+    PctLeft = 0
+    BarPct = 0
+    orange = 0xFFFFE303
+    green = ARGB(255,0,255,0)
+    blue = ARGB(255,0,0,255)
+    red = ARGB(255,255,0,0)
+    eRange = 280
+    Target = nil
+    QREADY = nil
+    WREADY = nil
+    EREADY = nil
+    RREADY = nil
+    QMana = nil
+    WMana = nil
+    EMana = nil
+    RMana = nil
+    MyMana = nil
 end
- 
+
 function LoadMenu()
      Config = scriptConfig("BioZed by Lucas and Pyr", "Die")
+     
      Config:addSubMenu("BioZed - Combo Settings", "ComboS")          
-            Config.ComboS:addParam("Fight", "BioCombo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
-            Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-            Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
+        Config.ComboS:addParam("Fight", "BioCombo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
+        Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
+        Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
+        Config.ComboS:addSubMenu("Disable Ult On", "disable")
+        for i, enemy in ipairs(UltTargets) do
+            Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
+        end
    
      Config:addSubMenu("BioZed - Harass Settings", "harass")
         Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
@@ -154,23 +160,23 @@ function LoadMenu()
         Config.harass:permaShow("mode")
    
     Config:addSubMenu("BioZed - Ignite Settings", "lignite")    
-           Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
-           Config.lignite:permaShow("igniteOptions")
-           Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
+        Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
+        Config.lignite:permaShow("igniteOptions")
+        Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
            
     Config:addSubMenu("BioZed - Drawing Setting", "draw")
-           Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
-           Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
-           Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
+        Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
+        Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
+        Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
                
     Config:addSubMenu("BioZed - Misc", "lmisc")
-           Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
+        Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
  
     Config:addSubMenu("BioZed - Farm", "lfarm")
-          Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
-          Config.lfarm:addParam("farmQ", "Farm With Q", SCRIPT_PARAM_ONOFF, true)
-          Config.lfarm:addParam("FarmE", "Farm With E", SCRIPT_PARAM_ONOFF, true)
-          Config.lfarm:permaShow("farmKey")
+        Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
+        Config.lfarm:addParam("farmQ", "Farm With Q", SCRIPT_PARAM_ONOFF, true)
+        Config.lfarm:addParam("FarmE", "Farm With E", SCRIPT_PARAM_ONOFF, true)
+        Config.lfarm:permaShow("farmKey")
 
     Config:addSubMenu("BioZed - Orbwalking", "Orbwalking")
         SOWi:LoadToMenu(Config.Orbwalking)
@@ -211,7 +217,7 @@ function Swap()
         end
     end
 end
- 
+
 function Fight()
     Swap()
     if QREADY and EREADY and WREADY and RREADY then 
@@ -221,23 +227,24 @@ function Fight()
     end
     if ts.target then
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-        
-            if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) end
-            if not RREADY or rClone ~= nil then
+            for i, enemyHero in ipairs(UltTargets) do
+            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
+            if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
                     if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
                             if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
                                     CastSpell(_W, ts.target.x, ts.target.z)
                             end
                     end
                                    
-                    if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then  
+                    if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed then  
                         if EREADY then  
                             CastE()
                         end                                                
-                        if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
+                        if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or Config.ComboS.disable["DisableUlt"..i] or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
                             CastQ()
                         end
                     end
+            end
             end
                        
                        
@@ -298,7 +305,10 @@ function Harass()
                     CastSpell(_W, ts.target.x, ts.target.z)
                 end
             end
-            if wClone and wClone.valid then CastQ() end
+            if wUsed then
+                CastQ()
+                CastSpell(_E, myHero)
+            end
             if not WREADY then 
                 CastQ()
                 CastQClone()
@@ -375,14 +385,14 @@ function autoE()
 end
  
 function CastR()
-       if not RREADY then return end
-        if ValidTarget(ts.target) then
-                if GetDistance(ts.target) <= 625 and RREADY and myHero:GetSpellData(_R).name ~= "ZedR2" then
-                        CastSpell(_R, ts.target)
-                end
-        else
-                return
+    if not RREADY then return end
+    if ValidTarget(ts.target) then
+        if GetDistance(ts.target) <= 625 and RREADY and myHero:GetSpellData(_R).name ~= "ZedR2" then
+            CastSpell(_R, ts.target)
         end
+    else
+        return 
+    end
 end
  
 function rUsed()
