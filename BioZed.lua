@@ -14,7 +14,7 @@ local UltTargets = GetEnemyHeroes()
 local REQUIRED_LIBS = {
     ["VPrediction"] = "https://bitbucket.org/honda7/bol/raw/master/Common/VPrediction.lua",
     ["SOW"] = "https://bitbucket.org/honda7/bol/raw/master/Common/SOW.lua",
-    ["SourceLib"] = "https://bitbucket.org/TheRealSource/public/raw/master/common/SourceLib.lua",
+    ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
                     }
 local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
 local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
