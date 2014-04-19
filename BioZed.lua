@@ -236,7 +236,7 @@ function Fight()
                             end
                     end
                                    
-                    if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed then  
+                    if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then  
                         if EREADY then  
                             CastE()
                         end                                                
@@ -306,9 +306,7 @@ function Harass()
                 end
             end
             if wUsed then
-                CastQ()
-                CastSpell(_E, myHero)
-            end
+                CastQ() end
             if not WREADY then 
                 CastQ()
                 CastQClone()
