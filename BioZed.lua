@@ -63,10 +63,10 @@ function OnLoad()
        qEnergy = {75, 70, 65, 60, 55}
        wEnergy = {40, 35, 30, 25, 20}
        eCost = 50
-			 qDelay, qWidth, qRange, qSpeed = 0.25, 45, 900, 902
-		   wDelay, wWidth, wRange, wSpeed = 0.25, 40, 550, 1600
-			 wSwap = false
-			 wCast = false
+             qDelay, qWidth, qRange, qSpeed = 0.25, 45, 900, 902
+           wDelay, wWidth, wRange, wSpeed = 0.25, 40, 550, 1600
+             wSwap = false
+             wCast = false
 end
  
 function OnTick()
@@ -236,7 +236,7 @@ function Fight()
                             end
                     end
                                    
-                    if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt then  
+                    if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed then  
                         if EREADY then  
                             CastE()
                         end                                                
@@ -303,10 +303,12 @@ function Harass()
             if QREADY and WREADY and (GetDistance(ts.target, myHero) < 700) and (MyMana > QMana+WMana+EMana) then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
                     CastSpell(_W, ts.target.x, ts.target.z)
+                    if wUsed then CastSpell(_E) end
                 end
             end
             if wUsed then
-                CastQ() end
+                CastQ()
+            end
             if not WREADY then 
                 CastQ()
                 CastQClone()
@@ -356,12 +358,12 @@ function CastQClone()
 end
 
 function CastW(tar, tarRange)
-		local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(tar, wDelay, wWidth, tarRange, wSpeed, myHero.visionPos, false)
-		if HitChance >= 2 and GetDistance(myHero.visionPos, CastPosition) <= tarRange then
-			CastSpell(_W, CastPosition.x, CastPosition.z)
-		end
-	end
-	
+        local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(tar, wDelay, wWidth, tarRange, wSpeed, myHero.visionPos, false)
+        if HitChance >= 2 and GetDistance(myHero.visionPos, CastPosition) <= tarRange then
+            CastSpell(_W, CastPosition.x, CastPosition.z)
+        end
+    end
+    
 function CastE()
     if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < eRange or GetDistance(ts.target, wClone) < eRange or GetDistance(ts.target, rClone) < eRange) then
         CastSpell(_E, myHero)
@@ -651,7 +653,7 @@ function OnProcessSpell(unit, spell)
         if unit.isMe and spell.name == "ZedShadowDash" then
                 wUsed = true
                 lastW = GetTickCount()
-				        wCast = true
+                        wCast = true
         end
 end
 
