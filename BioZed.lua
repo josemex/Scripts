@@ -112,6 +112,8 @@ function OnUnload()
 end
  
 function LoadVariables()
+	UseSwap = true
+	ChampCount = nil
     wClone, rClone = nil, nil
     RREADY, QREADY, WREADY, EREADY = false, false, false, false
     ignite = nil
@@ -148,6 +150,8 @@ function LoadMenu()
         Config.ComboS:addParam("Fight", "BioCombo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
         Config.ComboS:addParam("SwapUlt","Swap back with ult if hp < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
         Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
+        Config.ComboS:addParam("rSwap", "Swap to R shadow if safer when mark kills", SCRIPT_PARAM_ONOFF, false)
+        Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addSubMenu("Disable Ult On", "disable")
         for i, enemy in ipairs(UltTargets) do
             Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
@@ -204,22 +208,37 @@ end
 
 function Swap()
     local wDist = nil
-    if ts.target then
-        if wClone and wClone.valid then 
-            wDist = GetDistance(ts.target, wClone) 
-        else
-            return false
-        end
-        if GetDistance(ts.target) > 150 then
-            if wDist and wDist ~= 0 and (GetDistance(ts.target, myHero) > wDist) and (myHero:CanUseSpell(_W) == READY) and not EREADY then
-            CastSpell(_W)
+    if UseSwap == true then
+	    if ts.target then
+	        if wClone and wClone.valid then 
+	            wDist = GetDistance(ts.target, wClone) 
+	        else
+	            return false
+	        end
+	        if GetDistance(ts.target) > 250 then
+	            if wDist and wDist ~= 0 and (GetDistance(ts.target, myHero) > wDist) and (myHero:CanUseSpell(_W) == READY) and not EREADY then
+	            CastSpell(_W)
+	            end
+	        end
+	    end
+	end
+end
+
+function CountEnemies(point, range)
+	local ChampCount = 0
+    for j = 1, heroManager.iCount, 1 do
+        local enemyhero = heroManager:getHero(j)
+        if myHero.team ~= enemyhero.team and ValidTarget(enemyhero, 750) then
+            if GetDistanceSqr(enemyhero, point) <= range*range then
+                ChampCount = ChampCount + 1
             end
         end
-    end
+    end            
+    return ChampCount
 end
 
 function Fight()
-    Swap()
+    if Config.ComboS.wSwap then Swap() end
     if QREADY and EREADY and WREADY and RREADY then 
         ts.range = 1200
     else
@@ -232,7 +251,9 @@ function Fight()
             if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
                     if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
                             if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
+                            	if MyMana > (WMana+EMana) then
                                     CastSpell(_W, ts.target.x, ts.target.z)
+                                end
                             end
                     end
                                    
@@ -256,22 +277,18 @@ function Fight()
                 end
             end
             CastItems(ts.target)
+        if RREADY and rClone ~= nil and Config.ComboS.rSwap then
+        	if isDead then
+        		if CountEnemies(myHero, 250) > CountEnemies(rClone, 250) then
+        		--PrintChat("DEAD")
+        			UseSwap = false
+        			CastSpell(_R)
+        			DelayAction(function() UseSwap = true end, 5)
+        		end
+        	end
+        end
      
-     
-            if not QREADY and not EREADY then
-                    local wDist = 0
-                    local rDist = 0
-                    if wClone and wClone.valid then wDist = GetDistance(ts.target, wClone) end
-                    if rClone and rClone.valid then rDist = GetDistance(ts.target, rClone) end    
-                    if GetDistance(ts.target) > 125 then
-                            if wDist < rDist and wDist ~= 0 and GetDistance(ts.target) > wDist then
-                                    CastSpell(_W)
-                            elseif rDist < wDist and rDist ~= 0 and GetDistance(ts.target) > rDist then
-                                    CastSpell(_R)
-                                                                   
-                            end
-                    end
-            end
+    
             if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
                     CastSpell(_R)
             end
@@ -536,9 +553,9 @@ function Calculations()
                         if RREADY then
                                 UltExtraDmg = myHero.totalDamage
                                 if WREADY then
-                                        UltExtraDmg = UltExtraDmg + (15*myHero:GetSpellData(_R).level+5) * (EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg)
+                                        UltExtraDmg = UltExtraDmg + (.15*myHero:GetSpellData(_R).level+5) * (EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg)
                                 else
-                                        UltExtraDmg = UltExtraDmg + (15*myHero:GetSpellData(_R).level+5) * (EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + caaDmg)
+                                        UltExtraDmg = UltExtraDmg + (.15*myHero:GetSpellData(_R).level+5) * (EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + caaDmg)
                                 end
                                 UltExtraDmg = myHero:CalcDamage(enemy, UltExtraDmg)
                         end
@@ -638,6 +655,10 @@ function OnCreateObj(obj)
                         rClone = obj
                 end
         end
+        if obj.valid and obj.name:find("Zed_Base_R_buf_tell.troy") then
+        	isDead = true
+        	PrintChat("DEAD")
+        end
 end
  
 function OnDeleteObj(obj)
@@ -646,6 +667,9 @@ function OnDeleteObj(obj)
                 wClone = nil  
         elseif obj.valid and rClone and obj == rClone then
                 rClone = nil
+        end
+        if obj.valid and obj.name:find("Zed_Base_R_buf_tell.troy") then
+        	isDead = false
         end
 end
  

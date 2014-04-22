@@ -105,8 +105,8 @@ function OnTick()
                 end
             end
         end
-    if RREADY == false then
-    	UseSwap = true
+    if RREADY == true then
+    	UseSwap = false
     end
 end
  
@@ -218,7 +218,7 @@ function Swap()
 	        else
 	            return false
 	        end
-	        if GetDistance(ts.target) > 150 then
+	        if GetDistance(ts.target) > 250 then
 	            if wDist and wDist ~= 0 and (GetDistance(ts.target, myHero) > wDist) and (myHero:CanUseSpell(_W) == READY) and not EREADY then
 	            CastSpell(_W)
 	            end
