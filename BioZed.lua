@@ -8,6 +8,17 @@ local prediction
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
+local version = 1.41
+local scriptName = "BioZed"
+
+-- Change autoUpdate to false if you wish to not receive auto updates.
+-- Change silentUpdate to true if you wish not to receive any message regarding updates
+local autoUpdate   = true
+local silentUpdate = false
+
+if autoUpdate then
+    SourceUpdater(scriptName, version, "raw.github.com", "/LucasRPC/Scripts/master/BioZed.lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME):SetSilent(silentUpdate):CheckUpdate()
+end
 
 -- Lib Downloader --
 
