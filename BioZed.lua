@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.3<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.41<</font> ")
 end
  
 local RREADY, QREADY, WREADY, EREADY
@@ -247,25 +247,25 @@ function Fight()
     if ts.target then
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
             for i, enemyHero in ipairs(UltTargets) do
-            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
-            if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
-                    if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
-                            if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
-                            	if MyMana > (WMana+EMana) then
-                                    CastSpell(_W, ts.target.x, ts.target.z)
-                                end
-                            end
-                    end
-                                   
-                    if not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed then  
-                        if EREADY then  
-                            CastE()
-                        end                                                
-                        if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or Config.ComboS.disable["DisableUlt"..i] or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
-                            CastQ()
-                        end
-                    end
-            end
+	            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
+	            if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
+	                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
+	                    if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
+	            			if MyMana > (WMana+EMana) then
+	                            CastSpell(_W, ts.target.x, ts.target.z)
+	                        end
+	                    end
+	                end
+	                                   
+		            if (not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed) and (not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i]) then  
+		                if EREADY then  
+		                    CastE()
+		                end                                                
+		                if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or Config.ComboS.disable["DisableUlt"..i] or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
+		                    CastQ()
+		                end
+		            end
+            	end
             end
                        
                        
