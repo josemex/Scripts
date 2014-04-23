@@ -16,9 +16,6 @@ local scriptName = "BioZed"
 local autoUpdate   = true
 local silentUpdate = false
 
-if autoUpdate then
-    SourceUpdater(scriptName, version, "raw.github.com", "/LucasRPC/Scripts/master/BioZed.lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME):SetSilent(silentUpdate):CheckUpdate()
-end
 
 -- Lib Downloader --
 
@@ -49,6 +46,10 @@ for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
 end
 
 if DOWNLOADING_LIBS then print("Downloading required libraries, please wait...") return end
+
+if autoUpdate then
+    SourceUpdater(scriptName, version, "raw.github.com", "/LucasRPC/Scripts/master/BioZed.lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME):SetSilent(silentUpdate):CheckUpdate()
+end
 
 --
  
