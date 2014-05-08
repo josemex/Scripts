@@ -20,8 +20,8 @@ local silentUpdate = false
 -- Lib Downloader --
 
 local REQUIRED_LIBS = {
-    ["VPrediction"] = "https://bitbucket.org/honda7/bol/raw/master/Common/VPrediction.lua",
-    ["SOW"] = "https://bitbucket.org/honda7/bol/raw/master/Common/SOW.lua",
+    ["VPrediction"] = "https://raw.githubusercontent.com/honda7/BoL/master/Common/VPrediction.lua",
+    ["SOW"] = "https://raw.githubusercontent.com/honda7/BoL/master/Common/SOW.lua",
     ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
                     }
 local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
