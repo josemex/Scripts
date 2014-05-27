@@ -20,8 +20,8 @@ local silentUpdate = false
 -- Lib Downloader --
 
 local REQUIRED_LIBS = {
-    ["VPrediction"] = "https://raw.githubusercontent.com/honda7/BoL/master/Common/VPrediction.lua",
-    ["SOW"] = "https://raw.githubusercontent.com/honda7/BoL/master/Common/SOW.lua",
+    ["VPrediction"] = "https://bitbucket.org/honda7/bol/raw/master/Common/VPrediction.lua",
+    ["SOW"] = "https://bitbucket.org/honda7/bol/raw/master/Common/SOW.lua",
     ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
                     }
 local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
@@ -165,7 +165,7 @@ function LoadMenu()
         Config.ComboS:addParam("rSwap", "Swap to R shadow if safer when mark kills", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addSubMenu("Disable Ult On", "disable")
-        for i, enemy in ipairs(UltTargets) do
+        for i = 1, heroManager.iCount, 1 do
             Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
         end
    
@@ -258,9 +258,9 @@ function Fight()
     end
     if ts.target then
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-            for i, enemyHero in ipairs(UltTargets) do
+            for i = 1, heroManager.iCount, 1 do
 	            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
-	            if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
+	            if not RREADY or rClone ~= nil then
 	                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
 	                    if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
 	            			if MyMana > (WMana+EMana) then
@@ -269,11 +269,11 @@ function Fight()
 	                    end
 	                end
 	                                   
-		            if (not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed) and (not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i]) then  
+		            if (not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed) and (not RREADY or rClone ~= nil) then  
 		                if EREADY then  
 		                    CastE()
 		                end                                                
-		                if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or Config.ComboS.disable["DisableUlt"..i] or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
+		                if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
 		                    CastQ()
 		                end
 		            end
