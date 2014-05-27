@@ -165,7 +165,7 @@ function LoadMenu()
         Config.ComboS:addParam("rSwap", "Swap to R shadow if safer when mark kills", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addSubMenu("Disable Ult On", "disable")
-        for i = 1, heroManager.iCount, 1 do
+        for i, enemy in ipairs(UltTargets) do
             Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
         end
    
@@ -258,7 +258,7 @@ function Fight()
     end
     if ts.target then
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-            for i = 1, heroManager.iCount, 1 do
+            for i, enemyHero in ipairs(UltTargets) do
 	            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
 	            if not RREADY or rClone ~= nil then
 	                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
