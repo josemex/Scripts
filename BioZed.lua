@@ -8,7 +8,7 @@ local prediction
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.41
+local version = 1.42
 local scriptName = "BioZed"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
