@@ -3,8 +3,8 @@ if myHero.charName ~= "Udyr" then return end
 --Auto Download Required LIBS
 
 local REQUIRED_LIBS = {
-		["VPrediction"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/VPrediction.lua",
-		["SOW"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/SOW.lua",
+		["VPrediction"] = "https://raw.github.com/honda7/BoL/master/Common/VPrediction.lua",
+		["SOW"] = "https://raw.github.com/honda7/BoL/master/Common/SOW.lua",
 		["SourceLib"] = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua",
 
 }
@@ -33,6 +33,7 @@ end
 if DOWNLOADING_LIBS then return end
 --End auto downloading LIBS
 
+
 require "VPrediction"
 require "SourceLib"
 require "SOW"
@@ -46,6 +47,18 @@ local AAcount = 0
 local lastNameTarget = myHero.name
 local UdyrConfig, ts
 local qRange, wRange, eRange, rRange = 200, 200, 200, 200
+local version = 0.1
+local scriptName = "Godyr"
+
+-- Change autoUpdate to false if you wish to not receive auto updates.
+-- Change silentUpdate to true if you wish not to receive any message regarding updates
+local autoUpdate   = true
+local silentUpdate = false
+
+if autoUpdate then
+    SourceUpdater(scriptName, version, "raw.github.com", "/LucasRPC/Scripts/master/Godyr.lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME):SetSilent(silentUpdate):CheckUpdate()
+end
+
 
 function OnLoad()
    ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 600 ,DAMAGE_PHYSICAL)
