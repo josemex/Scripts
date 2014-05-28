@@ -51,6 +51,7 @@ require "SOW"
 
 local VP = nil
 local levelSequence = {4,1,3,4,4,3,4,3,4,3,3,1,1,1,1,2,2,2} 
+local levelSequence2 = {1,2,3,1,1,3,1,3,1,3,3,2,2,2,2,4,4,4}
 local ignite = nil
 local stunTarget = nil
 local lastCast = "none"
@@ -78,6 +79,9 @@ function OnTick()
     GlobalInfos()
     ts:update()
     if Config.ComboS.Fight then Fight() end
+		if Config.misc.autoLevel2 then
+		autoLevelSetSequence(levelSequence2)
+		end
 		if Config.misc.autoLevel then
 		autoLevelSetSequence(levelSequence)
 		
@@ -116,7 +120,8 @@ function LoadMenu()
 
     Config:addSubMenu("Godyr - Misc Settings", "misc")
         Config.misc:addParam("autoPotions", "Use potions when HP < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-	Config.misc:addParam("autoLevel", "Auto level spells R+E+Q+W", SCRIPT_PARAM_ONOFF, false)			
+	Config.misc:addParam("autoLevel", "Auto level spells R+E+Q+W", SCRIPT_PARAM_ONOFF, false)
+  Config.misc:addParam("autoLevel2", "Auto level spells Q+E+W+R", SCRIPT_PARAM_ONOFF, false)	
 	Config.misc:addParam("draw", "Draw Range", SCRIPT_PARAM_ONOFF, false)
 
     Config:addSubMenu("Godyr - Orbwalking", "Orbwalking")
