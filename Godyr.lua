@@ -141,7 +141,7 @@ function LoadMenu()
     Config:addTS(ts)
 end
 
-PrintChat("<font color=\"#FF0000\" >>>Godyr By Lucas v 0.2<</font> ")
+PrintChat("<font color=\"#FF0000\" >>> Godyr By Lucas v 0.2<</font> ")
 
 function autoPotions()
 	if Config.misc.autoPotions then
