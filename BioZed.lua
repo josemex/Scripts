@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.44<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.41<</font> ")
 end
  
 local RREADY, QREADY, WREADY, EREADY
@@ -8,7 +8,7 @@ local prediction
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.44
+local version = 1.45
 local scriptName = "BioZed"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
@@ -20,8 +20,8 @@ local silentUpdate = false
 -- Lib Downloader --
 
 local REQUIRED_LIBS = {
-    ["VPrediction"] = "https://raw.githubusercontent.com/honda7/BoL/master/Common/VPrediction.lua",
-    ["SOW"] = "https://raw.githubusercontent.com/honda7/BoL/master/Common/SOW.lua",
+    ["VPrediction"] = "https://bitbucket.org/honda7/bol/raw/master/Common/VPrediction.lua",
+    ["SOW"] = "https://bitbucket.org/honda7/bol/raw/master/Common/SOW.lua",
     ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
                     }
 local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
@@ -165,7 +165,8 @@ function LoadMenu()
         Config.ComboS:addParam("rSwap", "Swap to R shadow if safer when mark kills", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addSubMenu("Disable Ult On", "disable")
-        for i, enemy in ipairs(UltTargets) do
+        for i = 1, heroManager.iCount, 1 do
+        	local enemy = heroManager:GetHero(i)
             Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
         end
    
@@ -258,7 +259,7 @@ function Fight()
     end
     if ts.target then
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-            for i, enemyHero in ipairs(UltTargets) do
+            for i = 1, heroManager.iCount, 1 do
 	            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
 	            if not RREADY or rClone ~= nil then
 	                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
