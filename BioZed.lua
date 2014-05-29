@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.41<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.46<</font> ")
 end
  
 local RREADY, QREADY, WREADY, EREADY
@@ -8,7 +8,7 @@ local prediction
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.41
+local version = 1.46
 local scriptName = "BioZed"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
@@ -165,8 +165,10 @@ function LoadMenu()
         Config.ComboS:addParam("rSwap", "Swap to R shadow if safer when mark kills", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addSubMenu("Disable Ult On", "disable")
-        for i, enemy in ipairs(UltTargets) do
-            Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
+        for i = 1, heroManager.iCount, 1 do
+            if enemy.team ~= myHero.team then
+                Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
+            end
         end
    
      Config:addSubMenu("BioZed - Harass Settings", "harass")
@@ -257,8 +259,8 @@ function Fight()
         ts.range = 900
     end
     if ts.target then
+        for i = 1, heroManager.iCount, 1 do
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-            for i, enemyHero in ipairs(UltTargets) do
 	            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
 	            if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
 	                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
@@ -269,15 +271,14 @@ function Fight()
 	                    end
 	                end
 	                                   
-		            if (not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed) and (not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i]) then  
+		            if (not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed) and (not RREADY or rClone ~= nil) then  
 		                if EREADY then  
 		                    CastE()
 		                end                                                
-		                if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or Config.ComboS.disable["DisableUlt"..i] or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
+		                if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
 		                    CastQ()
 		                end
 		            end
-            	end
             end
                        
                        
@@ -302,11 +303,13 @@ function Fight()
      
     
             if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
+                if not Config.ComboS.disable["DisableUlt"..i] then
                     CastSpell(_R)
+                end
             end
             if ValidTarget(ts.target) then
                 local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
-                if UltDmg >= ts.target.health then
+                if UltDmg >= ts.target.health and not Config.ComboS.disable["DisableUlt"..i] then
                     if GetDistance(ts.target, myHero) < 1125 and GetDistance(ts.target, myHero) > 750 then
                     local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
                         if QREADY and EREADY and RREADY and not wClone and not rClone then
@@ -322,6 +325,7 @@ function Fight()
                 end
             end
         end
+    end
     end
 end
  
