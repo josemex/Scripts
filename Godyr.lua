@@ -2,36 +2,6 @@ if myHero.charName ~= "Udyr" then return end
 
 --Auto Download Required LIBS
 
-local REQUIRED_LIBS = {
-		["VPrediction"] = "https://raw.github.com/honda7/BoL/master/Common/VPrediction.lua",
-		["SOW"] = "https://raw.github.com/honda7/BoL/master/Common/SOW.lua",
-		["SourceLib"] = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua",
-
-}
-
-local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
-local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
-
-function AfterDownload()
-	DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
-	if DOWNLOAD_COUNT == 0 then
-		DOWNLOADING_LIBS = false
-		print("<b>[Udyr]: Required libraries downloaded successfully, please reload (double F9).</b>")
-	end
-end
-
-for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
-	if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
-		require(DOWNLOAD_LIB_NAME)
-	else
-		DOWNLOADING_LIBS = true
-		DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
-		DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
-	end
-end
-
-if DOWNLOADING_LIBS then return end
---End auto downloading LIBS
 local version = 0.2
 local scriptName = "Godyr"
 
@@ -39,6 +9,37 @@ local scriptName = "Godyr"
 -- Change silentUpdate to true if you wish not to receive any message regarding updates
 local autoUpdate   = true
 local silentUpdate = false
+
+
+-- Lib Downloader --
+
+local REQUIRED_LIBS = {
+    ["VPrediction"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/VPrediction.lua",
+    ["SOW"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/SOW.lua",
+    ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
+                    }
+local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
+local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
+
+function AfterDownload()
+    DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
+    if DOWNLOAD_COUNT == 0 then
+        DOWNLOADING_LIBS = false
+        print("<b>Required libraries downloaded successfully, please reload (double F9).</b>")
+    end
+end
+
+for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
+    if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
+        require(DOWNLOAD_LIB_NAME)
+    else
+        DOWNLOADING_LIBS = true
+        DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
+        DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
+    end
+end
+
+if DOWNLOADING_LIBS then print("Downloading required libraries, please wait...") return end
 
 if autoUpdate then
     SourceUpdater(scriptName, version, "raw.github.com", "/LucasRPC/Scripts/master/Godyr.lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME):SetSilent(silentUpdate):CheckUpdate()
@@ -59,6 +60,19 @@ local AAcount = 0
 local lastNameTarget = myHero.name
 local UdyrConfig, ts
 local qRange, wRange, eRange, rRange = 200, 200, 200, 200
+local     orange = 0xFFFFE303
+local green = ARGB(255,0,255,0)
+local blue = ARGB(255,0,0,255)
+local red = ARGB(255,255,0,0)
+local Udyr = {
+	Q = {range = math.huge},
+	W = {range = math.huge},
+	E = {range = math.huge},
+	R = {range = 200}
+}
+
+JungleFocusMobs = {}
+JungleMobs = {}
 
 
 
@@ -68,7 +82,9 @@ function OnLoad()
    VP = VPrediction()
    SOWi = SOW(VP)
    LoadMenu()
+   JungleNames()
    Ignite()
+	 Tick = GetTickCount()
    EnemyMinions = minionManager(MINION_ENEMY, 600, myHero, MINION_SORT_HEALTH_ASC)
 	 JMinions = minionManager(MINION_JUNGLE, qRange, myHero)
    PrintFloatText(myHero, 11, "LETS DISRESPECT!")
@@ -79,25 +95,19 @@ function OnTick()
     GlobalInfos()
     ts:update()
     if Config.ComboS.Fight then Fight() end
-		if Config.misc.autoLevel2 then
-		autoLevelSetSequence(levelSequence2)
-		end
-		if Config.misc.autoLevel then
+    if Config.jungle.Clear then
+		if GetTickCount() - Tick < 750 then return end
+		Tick = GetTickCount()
+		JungleClear()
+	end
+
+		if Config.misc.autoLevel  == 2 then
 		autoLevelSetSequence(levelSequence)
-		
-		if Config.jungle.Clear then
-	 	for i, minion in pairs(JMinions.objects) do
-			if minion and minion.valid and not minion.dead and (GetDistance(minion) <= 200) then
-				myHero:Attack(minion)
-		if Config.jungle.jungleQ and GetDistance(minion) <= qRange then CastSpell(_Q)  end
-		if Config.jungle.jungleW and GetDistance(minion) <= wRange then CastSpell(_W)  end
-		if Config.jungle.jungleE and GetDistance(minion) <= eRange then CastSpell(_E)  end
-		if Config.jungle.jungleR and GetDistance(minion) <= rRange then CastSpell(_R)  end
-			end
-		end
+		elseif Config.misc.autoLevel  == 3 then
+			autoLevelSetSequence(levelSequence2)
 	end
 	end
-end
+
 
 
 function LoadMenu()
@@ -109,10 +119,11 @@ function LoadMenu()
 
     Config:addSubMenu("Godyr - Jungle Clear", "jungle")
         Config.jungle:addParam("Clear", "Clear Jungle", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
-        Config.jungle:addParam("jungleQ", "Clear with (Q)", SCRIPT_PARAM_ONOFF, true)
-		Config.jungle:addParam("jungleW", "Clear with (W)", SCRIPT_PARAM_ONOFF, false)
-		Config.jungle:addParam("jungleE", "Clear with (E)", SCRIPT_PARAM_ONOFF, false)
-		Config.jungle:addParam("jungleR", "Clear with (R)", SCRIPT_PARAM_ONOFF, true)
+        Config.jungle:addParam("AA","Auto Attack in 'Jungle'",1,true)
+        Config.jungle:addParam("Q", "Clear with (Q)", 1,true)
+		Config.jungle:addParam("W", "Clear with (W)", 1,true)
+		Config.jungle:addParam("E", "Clear with (E)", 1,true)
+		Config.jungle:addParam("R", "Clear with (R)", 1,true)
    
     Config:addSubMenu("Godyr - Ignite Settings", "lignite")    
         Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Kill Steal"})
@@ -120,8 +131,7 @@ function LoadMenu()
 
     Config:addSubMenu("Godyr - Misc Settings", "misc")
         Config.misc:addParam("autoPotions", "Use potions when HP < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-	Config.misc:addParam("autoLevel", "Auto level spells R+E+Q+W", SCRIPT_PARAM_ONOFF, false)
-  Config.misc:addParam("autoLevel2", "Auto level spells Q+E+W+R", SCRIPT_PARAM_ONOFF, false)	
+	Config.misc:addParam("autoLevel", "Auto Level", SCRIPT_PARAM_LIST, 1, { "Don't use", "Godyr", "Tigerdyr"})
 	Config.misc:addParam("draw", "Draw Range", SCRIPT_PARAM_ONOFF, false)
 
     Config:addSubMenu("Godyr - Orbwalking", "Orbwalking")
@@ -339,23 +349,6 @@ function CastItems(target)
         end
 end
 
-function ArrangePrioritys()
-    for i, target in pairs(GetEnemyHeroes()) do
-        SetPriority(priorityTable.AD_Carry, target, 1)
-        SetPriority(priorityTable.AP, target, 2)
-        SetPriority(priorityTable.Support, target, 3)
-        SetPriority(priorityTable.Bruiser, target, 4)
-        SetPriority(priorityTable.Tank, target, 5)
-    end
-end
-
-function SetPriority(table, hero, priority)
-    for i=1, #table, 1 do
-        if hero.charName:find(table[i]) ~= nil then
-            TS_SetHeroPriority(priority, hero.charName)
-        end
-    end
-end
 
 function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
     radius = radius or 300
@@ -390,5 +383,104 @@ function OnDraw()
 			DrawCircle(ts.target.x, ts.target.y, ts.target.z, 150, 0x7A24DB)
 		end
 		DrawCircle(myHero.x, myHero.y, myHero.z, 600, 0xC2743C)
+	end
+end
+function JungleNames()
+	JungleMobNames =
+{
+	-- Blue Side --
+		-- Blue Buff --
+		["YoungLizard1.1.2"] = true, ["YoungLizard1.1.3"] = true,
+		-- Red Buff --
+		["YoungLizard4.1.2"] = true, ["YoungLizard4.1.3"] = true,
+		-- Wolf Camp --
+		["wolf2.1.2"] = true, ["wolf2.1.3"] = true,
+		-- Wraith Camp --
+		["LesserWraith3.1.2"] = true, ["LesserWraith3.1.3"] = true, ["LesserWraith3.1.4"] = true,
+		-- Golem Camp --
+		["SmallGolem5.1.1"] = true,
+	-- Purple Side --
+		-- Blue Buff --
+		["YoungLizard7.1.2"] = true, ["YoungLizard7.1.3"] = true,
+		-- Red Buff --
+		["YoungLizard10.1.2"] = true, ["YoungLizard10.1.3"] = true,
+		-- Wolf Camp --
+		["wolf8.1.2"] = true, ["wolf8.1.3"] = true,
+		-- Wraith Camp --
+		["LesserWraith9.1.2"] = true, ["LesserWraith9.1.3"] = true, ["LesserWraith9.1.4"] = true,
+		-- Golem Camp --
+		["SmallGolem11.1.1"] = true,
+}
+-- FocusJungleNames are the names of the important/big Junglemobs --
+	FocusJungleNames =
+{
+	-- Blue Side --
+		-- Blue Buff --
+		["AncientGolem1.1.1"] = true,
+		-- Red Buff --
+		["LizardElder4.1.1"] = true,
+		-- Wolf Camp --
+		["GiantWolf2.1.1"] = true,
+		-- Wraith Camp --
+		["Wraith3.1.1"] = true,		
+		-- Golem Camp --
+		["Golem5.1.2"] = true,		
+		-- Big Wraith --
+		["GreatWraith13.1.1"] = true, 
+	-- Purple Side --
+		-- Blue Buff --
+		["AncientGolem7.1.1"] = true,
+		-- Red Buff --
+		["LizardElder10.1.1"] = true,
+		-- Wolf Camp --
+		["GiantWolf8.1.1"] = true,
+		-- Wraith Camp --
+		["Wraith9.1.1"] = true,
+		-- Golem Camp --
+		["Golem11.1.2"] = true,
+		-- Big Wraith --
+		["GreatWraith14.1.1"] = true,
+	-- Dragon --
+		["Dragon6.1.1"] = true,
+	-- Baron --
+		["Worm12.1.1"] = true,
+}
+end
+function JungleClear()
+	for i = 0, objManager.maxObjects do
+		local object = objManager:getObject(i)
+		if object ~= nil then
+			if FocusJungleNames[object.name] then
+				table.insert(JungleFocusMobs, object)
+			elseif JungleMobNames[object.name] then
+				table.insert(JungleMobs, object)
+			end
+		end
+	end
+	local JungleMob = GetJungleMob()
+	if JungleMob ~= nil then
+		if Config.jungle.AA then
+			myHero:Attack(JungleMob)
+		end
+		if Config.jungle.Q and QREADY then
+			CastSpell(_Q)
+		end
+		if Config.jungle.W and WREADY then
+			CastSpell(_W)
+		end
+		if Config.jungle.E and EREADY then
+			CastSpell(_E)
+		end
+		if Config.jungle.R and RREADY then
+			CastSpell(_R)
+		end
+	end
+end
+function GetJungleMob()
+	for _, Mob in pairs(JungleFocusMobs) do
+		if ValidTarget(Mob, Udyr.R["range"]) then return Mob end
+	end
+	for _, Mob in pairs(JungleMobs) do
+		if ValidTarget(Mob, Udyr.R["range"]) then return Mob end
 	end
 end
