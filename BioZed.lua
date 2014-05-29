@@ -166,6 +166,7 @@ function LoadMenu()
         Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
         Config.ComboS:addSubMenu("Disable Ult On", "disable")
         for i = 1, heroManager.iCount, 1 do
+        	enemy = heroManager:GetHero(i)
             if enemy.team ~= myHero.team then
                 Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
             end
@@ -261,10 +262,7 @@ function Fight()
     if ts.target then
         for i = 1, heroManager.iCount, 1 do
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-<<<<<<< HEAD
-=======
             for i = 1, heroManager.iCount, 1 do
->>>>>>> da95f56a05e0f39685c6b9219e8347bc9b2a5486
 	            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
 	            if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
 	                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
@@ -283,6 +281,7 @@ function Fight()
 		                    CastQ()
 		                end
 		            end
+		        end
             end
                        
                        
@@ -782,3 +781,4 @@ function OnDraw()
                 end
         end
 end
+
