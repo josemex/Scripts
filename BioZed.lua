@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.47<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.48<</font> ")
 end
  
 local RREADY, QREADY, WREADY, EREADY
@@ -8,7 +8,7 @@ local prediction
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.47
+local version = 1.48
 local scriptName = "BioZed"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
@@ -99,7 +99,6 @@ function OnTick()
                         ts.target = enemyhero
                 end
      end
-    --if Config.lmisc.AutoE then autoE() end
      SetCooldowns()
      if Config.ComboS.Fight then Fight() end
      if Config.lfarm.farmKey then
@@ -393,12 +392,7 @@ function CastQClone()
     end
 end
 
-function CastW(tar, tarRange)
-        local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(tar, wDelay, wWidth, tarRange, wSpeed, myHero.visionPos, false)
-        if HitChance >= 2 and GetDistance(myHero.visionPos, CastPosition) <= tarRange then
-            CastSpell(_W, CastPosition.x, CastPosition.z)
-        end
-    end
+
     
 function CastE()
     if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < eRange or GetDistance(ts.target, wClone) < eRange or GetDistance(ts.target, rClone) < eRange) then
@@ -406,19 +400,6 @@ function CastE()
     end
 end
  
-function autoE()
-        local box = 280
-        if GetDistance(ts.target, myHero) < box or (wClone ~= nil and wClone.valid and GetDistance(ts.target, wClone) < box) or (rClone ~= nil and rClone.valid and GetDistance(ts.target, rClone) < box) then
-                CastSpell(_E)
-        else
-                for i = 1, heroManager.iCount do
-                        local enemy = heroManager:getHero(i)
-                        if ValidTarget(enemy) and GetDistance(enemy) < box or (wClone ~= nil and wClone.valid and GetDistance(enemy, wClone) < box) or (rClone ~= nil and rClone.valid and GetDistance(enemy, rClone) < box) then
-                                CastSpell(_E)
-                        end
-                end
-        end
-end
  
 function CastR()
     if not RREADY then return end
