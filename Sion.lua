@@ -75,6 +75,7 @@ function OnTick()
     GlobalInfos()
     ts:update()
     if Config.ComboS.Fight then Fight() end
+    if UltimateKey then RenektonsUltimate() end
     if Config.jungle.Clear then
 		if GetTickCount() - Tick < 750 then return end
 		Tick = GetTickCount()
@@ -90,8 +91,19 @@ function LoadMenu()
         Config.ComboS:addParam("Q", "Use 'Q'", SCRIPT_PARAM_ONOFF, true)
 	    Config.ComboS:addParam("W", "Use 'W'", SCRIPT_PARAM_ONOFF, true)
 	    Config.ComboS:addParam("E", "Use 'E'", SCRIPT_PARAM_ONOFF, true)
-	    Config.ComboS:addParam("R", "Use 'R'", SCRIPT_PARAM_ONOFF, true)
-	    Config.ComboS:addParam("RRange", "Enemies in range for R", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
+	    Config.ComboS:addParam("UltimateKey", "Enable/Disable Auto-Ultimate: ", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("M"))
+	    Config.ComboS.addSubMenu:addParam("Ultimate", "Ultimate Settings")
+	    Config.ComboS.Ultimate:addParam("UltimateInfo", "--- Enable/disable Ultimate in Combo ---", SCRIPT_PARAM_INFO, "")
+	    Config.ComboS.Ultimate:addParam("useUltimateIfLow", "Use Ultimate if below %: ", SCRIPT_PARAM_ONOFF, false)
+	    Config.ComboS.Ultimate:addParam("useUltimateIfLowSlider", "Health-%: ", SCRIPT_PARAM_SLICE, 20, 0, 100, -1)
+	    Config.ComboS.Ultimate:addParam("UltimateInfo", "-----------------------------------------------------", SCRIPT_PARAM_INFO, "")
+	    Config.ComboS.Ultimate:addParam("useUltimateTowerDive", "Use Ultimate if below % under tower: ", SCRIPT_PARAM_ONOFF, true)
+	    Config.ComboS.Ultimate:addParam("useUltimateTowerDiveSlider", "Health-%: ", SCRIPT_PARAM_SLICE, 40, 0, 100, -1)
+	    Config.ComboS.Ultimate:addParam("UltimateInfo", "-----------------------------------------------------", SCRIPT_PARAM_INFO, "")
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemy", "Use Ultimate if x-enemys in range and below %: ", SCRIPT_PARAM_ONOFF, false)
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderNumber", "Number of enemys: ", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderHealth", "Health-%: ", SCRIPT_PARAM_SLICE, 60, 0, 100, -1)
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderRange", "Range for enemys: ", SCRIPT_PARAM_SLICE, 500, 0, 1000, 1)
 
 	 Config:addSubMenu("Sion - Jungle Clear", "jungle")
         Config.jungle:addParam("Clear", "Clear Jungle", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
@@ -117,7 +129,7 @@ function LoadMenu()
     Config:addTS(ts)
 end
 
-PrintChat("<font color=\"#FF0000\" >>> Sion Get Shrek'd By Lucas v 0.1<</font> ")
+PrintChat("<font color=\"#FF0000\" >>> Sion By Lucas v 0.1<</font> ")
 
 function autoPotions()
 	if Config.misc.autoPotions then
@@ -249,10 +261,28 @@ function Fight()
 	if EREADY and ValidTarget(ts.target, eRange) and Config.ComboS.E then
 		CastSpell(_E)
 	end
+end
 
-	if RREADY and ValidTarget(ts.target, rRange) and Config.ComboS.R then
-		CastSpell(_R)
-	end
+function SionUltimate()
+if not RREADY then return end
+		if Config.ComboS.Ultimate.useUltimateIfLow
+			then 
+				if RREADY and myHero.health < (myHero.maxHealth * (Config.ComboS.Ultimate.useUltimateIfLowSlider/100))
+					then CastSpell(_R)
+				end
+		end
+		if Config.ComboS.Ultimate.useUltimateTowerDive
+			then
+				if CountEnemyHeroInRange(1000) > 0 and UnitAtTower(myHero) and RREADY and myHero.health < (myHero.maxHealth * (Config.ComboS.Ultimate.useUltimateTowerDiveSlider/100))
+					then CastSpell(_R)
+				end
+		end	
+		if Config.ComboS.Ultimate.useUltimateEnemy
+			then
+				if RREADY and CountEnemyHeroInRange(Config.ComboS.Ultimate.useUltimateEnemySliderRange) >= Config.ComboS.Ultimate.useUltimateEnemySliderNumber and myHero.health < (myHero.maxHealth * (Config.ComboS.Ultimate.useUltimateEnemySliderHealth/100))
+					then CastSpell(_R)
+				end
+		end
 end
 
 function JungleNames()
@@ -349,6 +379,19 @@ function GetJungleMob()
 	end
 end
 
+function UnitAtTower(unit)
+	for i, turret in pairs(GetTurrets()) do
+		if turret ~= nil then
+			if turret.team ~= myHero.team then
+				if GetDistance(unit, turret) <= turret.range then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
 function GetCustomTarget()
 	ts:update()
     if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
@@ -369,6 +412,56 @@ function OrbwalkToPosition(position)
 		elseif _G.AutoCarry and _G.AutoCarry.Orbwalker then
 			_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
 		end
+	end
+end
+
+function OnCreateObj(obj)
+	if obj ~= nil then
+		if obj.name:find("TeleportHome.troy") then
+			if GetDistance(obj) <= 70 then
+				Recalling = true
+			end
+		end 
+		if FocusJungleNames[obj.name] then
+			table.insert(JungleFocusMobs, obj)
+		elseif JungleMobNames[obj.name] then
+            table.insert(JungleMobs, obj)
+		end
+	end
+end
+function OnDeleteObj(obj)
+	if obj ~= nil then
+		if obj.name:find("TeleportHome.troy") then
+			if GetDistance(obj) <= 70 then
+				Recalling = false
+			end
+		end 
+		for i, Mob in pairs(JungleMobs) do
+			if obj.name == Mob.name then
+				table.remove(JungleMobs, i)
+			end
+		end
+		for i, Mob in pairs(JungleFocusMobs) do
+			if obj.name == Mob.name then
+				table.remove(JungleFocusMobs, i)
+			end
+		end
+	end
+end
+
+function OnRecall(hero, channelTimeInMs)
+	if hero.networkID == player.networkID then
+		Recalling = true
+	end
+end
+function OnAbortRecall(hero)
+	if hero.networkID == player.networkID
+		then Recalling = false
+	end
+end
+function OnFinishRecall(hero)
+	if hero.networkID == player.networkID
+		then Recalling = false
 	end
 end
 
