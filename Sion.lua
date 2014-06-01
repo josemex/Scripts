@@ -38,6 +38,7 @@ local VP = nil
 local ignite = nil
 local qRange, wRange, eRange, rRange = 550, 450, 220, 220
 local ts
+local e	Active = false
 local Sion = {
 	Q = {range = math.huge},
 	W = {range = math.huge},
@@ -62,6 +63,7 @@ end
 function OnTick()
     GlobalInfos()
     ts:update()
+		KillSteal()
     if Config.ComboS.Fight then Fight() end
     if UltimateKey then SionUltimate() end
     if Config.jungle.Clear then
@@ -77,23 +79,23 @@ function LoadMenu()
      Config:addSubMenu("Sion - Combo Settings", "ComboS")          
         Config.ComboS:addParam("Fight", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
         Config.ComboS:addParam("Q", "Use 'Q'", SCRIPT_PARAM_ONOFF, true)
-	Config.ComboS:addParam("W", "Use 'W'", SCRIPT_PARAM_ONOFF, true)
-	Config.ComboS:addParam("E", "Use 'E'", SCRIPT_PARAM_ONOFF, true)
-	Config.ComboS:addParam("UltimateKey", "Enable/Disable Auto-Ultimate: ", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("M"))
-	Config.ComboS:addSubMenu("Ultimate Settings", "Ultimate")
-	Config.ComboS.Ultimate:addParam("UltimateInfo", "--- Enable/disable Ultimate in Combo ---", SCRIPT_PARAM_INFO, "")
-	Config.ComboS.Ultimate:addParam("useUltimateIfLow", "Ultimate if below %: ", SCRIPT_PARAM_ONOFF, false)
-	Config.ComboS.Ultimate:addParam("useUltimateIfLowSlider", "Health-%: ", SCRIPT_PARAM_SLICE, 20, 0, 100, -1)
-	Config.ComboS.Ultimate:addParam("UltimateInfo", "-----------------------------------------------------", SCRIPT_PARAM_INFO, "")
-	Config.ComboS.Ultimate:addParam("useUltimateTowerDive", "Ultimate if below % under tower: ", SCRIPT_PARAM_ONOFF, true)
-	Config.ComboS.Ultimate:addParam("useUltimateTowerDiveSlider", "Health-%: ", SCRIPT_PARAM_SLICE, 40, 0, 100, -1)
-	Config.ComboS.Ultimate:addParam("UltimateInfo", "-----------------------------------------------------", SCRIPT_PARAM_INFO, "")
-	Config.ComboS.Ultimate:addParam("useUltimateEnemy", "Ultimate if x-enemys in range and below %: ", SCRIPT_PARAM_ONOFF, false)
-	Config.ComboS.Ultimate:addParam("useUltimateEnemySliderNumber", "Number of enemys: ", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
-	Config.ComboS.Ultimate:addParam("useUltimateEnemySliderHealth", "Health-%: ", SCRIPT_PARAM_SLICE, 60, 0, 100, -1)
-	Config.ComboS.Ultimate:addParam("useUltimateEnemySliderRange", "Range for enemys: ", SCRIPT_PARAM_SLICE, 500, 0, 1000, 1)
+	    Config.ComboS:addParam("W", "Use 'W'", SCRIPT_PARAM_ONOFF, true)
+	    Config.ComboS:addParam("E", "Use 'E'", SCRIPT_PARAM_ONOFF, true)
+	    Config.ComboS:addParam("UltimateKey", "Enable/Disable Auto-Ultimate: ", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("M"))
+	    Config.ComboS:addSubMenu("Ultimate Settings", "Ultimate")
+	    Config.ComboS.Ultimate:addParam("UltimateInfo", "--- Enable/disable Ultimate in Combo ---", SCRIPT_PARAM_INFO, "")
+	    Config.ComboS.Ultimate:addParam("useUltimateIfLow", "Ultimate if below %: ", SCRIPT_PARAM_ONOFF, false)
+	    Config.ComboS.Ultimate:addParam("useUltimateIfLowSlider", "Health-%: ", SCRIPT_PARAM_SLICE, 20, 0, 100, -1)
+	    Config.ComboS.Ultimate:addParam("UltimateInfo", "-----------------------------------------------------", SCRIPT_PARAM_INFO, "")
+	    Config.ComboS.Ultimate:addParam("useUltimateTowerDive", "Ultimate if below % under tower: ", SCRIPT_PARAM_ONOFF, true)
+	    Config.ComboS.Ultimate:addParam("useUltimateTowerDiveSlider", "Health-%: ", SCRIPT_PARAM_SLICE, 40, 0, 100, -1)
+	    Config.ComboS.Ultimate:addParam("UltimateInfo", "-----------------------------------------------------", SCRIPT_PARAM_INFO, "")
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemy", "Ultimate if x-enemys in range and below %: ", SCRIPT_PARAM_ONOFF, false)
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderNumber", "Number of enemys: ", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderHealth", "Health-%: ", SCRIPT_PARAM_SLICE, 60, 0, 100, -1)
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderRange", "Range for enemys: ", SCRIPT_PARAM_SLICE, 500, 0, 1000, 1)
 
-     Config:addSubMenu("Sion - Jungle Clear", "jungle")
+	 Config:addSubMenu("Sion - Jungle Clear", "jungle")
         Config.jungle:addParam("Clear", "Clear Jungle", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
         Config.jungle:addParam("AA","Auto Attack in 'Jungle'",1,true)
         Config.jungle:addParam("Q", "Clear with (Q)", 1,true)
@@ -117,7 +119,7 @@ function LoadMenu()
     Config:addTS(ts)
 end
 
-PrintChat("<font color=\"#FF0000\" >>> Sion By Lucas v 0.1<</font> ")
+PrintChat("<font color=\"#FF0000\" >>> Sion By <font color = \"#fff8e7\">Lucas </font><</font> ")
 
 function autoPotions()
 	if Config.misc.autoPotions then
@@ -209,16 +211,15 @@ function CastItems(target)
 end
 
 function KillSteal()
-	qDmg = getDmg(_Q, Target, myHero)
-    if Config.misc.KillSteal then
-        if Target.health < qDmg then
-        	if GetDistance(Target, QRange) then
-        		if QREADY then
-            		CastSpell(_Q, Target)
-            	end
-            end
-        end
-    end
+	for i=1, heroManager.iCount do
+		local enemy = heroManager:GetHero(i)
+		if ValidTarget(enemy) and Config.misc.KillSteal then
+			qDmg = getDmg("Q",enemy,myHero) or 0
+			if enemy.health <= qDmg and GetDistance(enemy) <= QRange and QREADY then
+				CastSpell(_Q, enemy)
+			end
+		end
+	end
 end
 
 function Fight()
@@ -233,7 +234,7 @@ function Fight()
 		CastSpell(_W)
 	end
 
-	if EREADY and ValidTarget(ts.target, eRange) and Config.ComboS.E then
+	if EREADY and ValidTarget(ts.target, eRange) and Config.ComboS.E and not eActive then
 		CastSpell(_E)
 	end
 end
@@ -383,4 +384,16 @@ end
 
 function KeyBindings()
 	UltimateKey = Config.ComboS.UltimateKey
+end
+
+function OnGainBuff(myHero, buff)
+	if buff.name == "Enrage" then
+		eActive = true
+	end
+end
+
+function OnLoseBuff(myHero, buff)
+	if buff.name == "Enrage" then
+		eActive = false
+	end
 end
