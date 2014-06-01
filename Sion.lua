@@ -30,7 +30,6 @@ end
 
 if DOWNLOADING_LIBS then print("Downloading required libraries, please wait...") return end
 
-
 require "VPrediction"
 require "SourceLib"
 require "SOW"
@@ -39,11 +38,8 @@ local VP = nil
 local ignite = nil
 local qRange, wRange, eRange, rRange = 550, 450, 220, 220
 local ts
-local lastCast = "none"
-local lastNameTarget = myHero.name
-local AAcount = 0
 local Sion = {
-	Q = {range = 550},
+	Q = {range = math.huge},
 	W = {range = math.huge},
 	E = {range = math.huge},
 	R = {range = math.huge},
@@ -55,24 +51,19 @@ JungleMobs = {}
 function OnLoad()
 	ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 550 ,DAMAGE_PHYSICAL)
 	ts.name = "Sion"
-        if VIP_USER then
-            VP = VPrediction()
-        end
+   VP = VPrediction()
     SOWi = SOW(VP)
     LoadMenu()
     Ignite()
-    if _G.MMA_Loaded then
-     	print('MMA detected, using MMA Compatibility!')
-     elseif _G.AutoCarry.Orbwalker then
-    	print('SAC detected, using SAC Compatibility!')
-     end
+		JungleNames()
+		Tick = GetTickCount()
 end
 
 function OnTick()
     GlobalInfos()
     ts:update()
     if Config.ComboS.Fight then Fight() end
-    if UltimateKey then RenektonsUltimate() end
+    if UltimateKey then SionUltimate() end
     if Config.jungle.Clear then
 		if GetTickCount() - Tick < 750 then return end
 		Tick = GetTickCount()
@@ -89,15 +80,15 @@ function LoadMenu()
 	    Config.ComboS:addParam("W", "Use 'W'", SCRIPT_PARAM_ONOFF, true)
 	    Config.ComboS:addParam("E", "Use 'E'", SCRIPT_PARAM_ONOFF, true)
 	    Config.ComboS:addParam("UltimateKey", "Enable/Disable Auto-Ultimate: ", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("M"))
-	    Config.ComboS.addSubMenu:addParam("Ultimate", "Ultimate Settings")
+	    Config.ComboS:addSubMenu("Ultimate Settings", "Ultimate")
 	    Config.ComboS.Ultimate:addParam("UltimateInfo", "--- Enable/disable Ultimate in Combo ---", SCRIPT_PARAM_INFO, "")
-	    Config.ComboS.Ultimate:addParam("useUltimateIfLow", "Use Ultimate if below %: ", SCRIPT_PARAM_ONOFF, false)
+	    Config.ComboS.Ultimate:addParam("useUltimateIfLow", "Ultimate if below %: ", SCRIPT_PARAM_ONOFF, false)
 	    Config.ComboS.Ultimate:addParam("useUltimateIfLowSlider", "Health-%: ", SCRIPT_PARAM_SLICE, 20, 0, 100, -1)
 	    Config.ComboS.Ultimate:addParam("UltimateInfo", "-----------------------------------------------------", SCRIPT_PARAM_INFO, "")
-	    Config.ComboS.Ultimate:addParam("useUltimateTowerDive", "Use Ultimate if below % under tower: ", SCRIPT_PARAM_ONOFF, true)
+	    Config.ComboS.Ultimate:addParam("useUltimateTowerDive", "Ultimate if below % under tower: ", SCRIPT_PARAM_ONOFF, true)
 	    Config.ComboS.Ultimate:addParam("useUltimateTowerDiveSlider", "Health-%: ", SCRIPT_PARAM_SLICE, 40, 0, 100, -1)
 	    Config.ComboS.Ultimate:addParam("UltimateInfo", "-----------------------------------------------------", SCRIPT_PARAM_INFO, "")
-	    Config.ComboS.Ultimate:addParam("useUltimateEnemy", "Use Ultimate if x-enemys in range and below %: ", SCRIPT_PARAM_ONOFF, false)
+	    Config.ComboS.Ultimate:addParam("useUltimateEnemy", "Ultimate if x-enemys in range and below %: ", SCRIPT_PARAM_ONOFF, false)
 	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderNumber", "Number of enemys: ", SCRIPT_PARAM_SLICE, 1, 1, 5, 0)
 	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderHealth", "Health-%: ", SCRIPT_PARAM_SLICE, 60, 0, 100, -1)
 	    Config.ComboS.Ultimate:addParam("useUltimateEnemySliderRange", "Range for enemys: ", SCRIPT_PARAM_SLICE, 500, 0, 1000, 1)
@@ -114,7 +105,7 @@ function LoadMenu()
 
     Config:addSubMenu("Sion - Misc Settings", "misc")
         Config.misc:addParam("autoPotions", "Use potions when HP < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-        Config.misc:addParam("KillSteal", "KillSteal With Q")
+        Config.misc:addParam("KillSteal", "KillSteal With Q", SCRIPT_PARAM_ONOFF, true)
         Config.misc:addParam("drawAA", "Draw AA Range", SCRIPT_PARAM_ONOFF, true)
 	    Config.misc:addParam("drawQ", "Draw Q Range", SCRIPT_PARAM_ONOFF, true)
 	    Config.misc:addParam("drawW", "Draw W Range", SCRIPT_PARAM_ONOFF, true)
@@ -139,19 +130,6 @@ function autoPotions()
 			end
 			tickPotions = GetTickCount()
 		end
-	end
-end
-
-function ResetAACount()
-if ts.target ~= nil then
-		if ts.target.name ~= lastNameTarget then
-			lastNameTarget = ts.target.name
-			AAcount = 0
-			lastCast = "none"
-		end
-	else
-		AAcount = 0
-		lastCast = "none"
 	end
 end
 
@@ -360,7 +338,7 @@ function JungleClear()
 			myHero:Attack(JungleMob)
 		end
 		if Config.jungle.Q and QREADY then
-			CastSpell(_Q)
+			CastSpell(_Q, JungleMob)
 		end
 		if Config.jungle.W and WREADY then
 			CastSpell(_W)
@@ -389,116 +367,20 @@ function UnitAtTower(unit)
 	return false
 end
 
-function GetCustomTarget()
-	ts:update()
-    if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
-    if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
-    return ts.target
-end
-
-function OrbwalkToPosition(position)
-	if position ~= nil then
-		if _G.MMA_Loaded then
-			_G.moveToCursor(position.x, position.z)
-		elseif _G.AutoCarry and _G.AutoCarry.Orbwalker then
-			_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(position)
-		end
-	else
-		if _G.MMA_Loaded then
-			return
-		elseif _G.AutoCarry and _G.AutoCarry.Orbwalker then
-			_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
-		end
-	end
-end
-
-function OnCreateObj(obj)
-	if obj ~= nil then
-		if obj.name:find("TeleportHome.troy") then
-			if GetDistance(obj) <= 70 then
-				Recalling = true
-			end
-		end 
-		if FocusJungleNames[obj.name] then
-			table.insert(JungleFocusMobs, obj)
-		elseif JungleMobNames[obj.name] then
-            table.insert(JungleMobs, obj)
-		end
-	end
-end
-function OnDeleteObj(obj)
-	if obj ~= nil then
-		if obj.name:find("TeleportHome.troy") then
-			if GetDistance(obj) <= 70 then
-				Recalling = false
-			end
-		end 
-		for i, Mob in pairs(JungleMobs) do
-			if obj.name == Mob.name then
-				table.remove(JungleMobs, i)
-			end
-		end
-		for i, Mob in pairs(JungleFocusMobs) do
-			if obj.name == Mob.name then
-				table.remove(JungleFocusMobs, i)
-			end
-		end
-	end
-end
-
-function OnRecall(hero, channelTimeInMs)
-	if hero.networkID == player.networkID then
-		Recalling = true
-	end
-end
-function OnAbortRecall(hero)
-	if hero.networkID == player.networkID
-		then Recalling = false
-	end
-end
-function OnFinishRecall(hero)
-	if hero.networkID == player.networkID
-		then Recalling = false
-	end
-end
-
-function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
-    radius = radius or 300
-        quality = math.max(8,round(180/math.deg((math.asin((chordlength/(2*radius)))))))
-        quality = 2 * math.pi / quality
-        radius = radius*.92
-    local points = {}
-    for theta = 0, 2 * math.pi + quality, quality do
-        local c = WorldToScreen(D3DXVECTOR3(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
-        points[#points + 1] = D3DXVECTOR2(c.x, c.y)
-    end
-    DrawLines2(points, width or 1, color or 4294967295)
-end
- 
-function round(num)
-    if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
-end
- 
-function DrawCircle2(x, y, z, radius, color)
-    local vPos1 = Vector(x, y, z)
-    local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
-    local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
-    local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
-    if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
-        DrawCircleNextLvl(x, y, z, radius, 1, color, 75)    
-    end
-end
-
 function OnDraw()
-	if not myHero.dead and Config.misc.drawAA then
-		DrawCircle(myHero.x, myHero.y, myHero.z, 250, ARGB(255, 0, 255, 0))
+	if Config.misc.drawAA then
+		DrawCircle(myHero.x, myHero.y, myHero.z, 250, 0x111111)
 	end		
 	
-	if not myHero.dead and Config.misc.drawQ then
-		DrawCircle(myHero.x, myHero.y, myHero.z, QRange, 0x111111)
+	if Config.misc.drawQ then
+		DrawCircle(myHero.x, myHero.y, myHero.z, qRange, 0x111111)
 	end
 	
-	if not myHero.dead and Config.misc.drawW then
-		DrawCircle(myHero.x, myHero.y, myHero.z, 250, ARGB(255, 0, 255, 0))
+	if Config.misc.drawW then
+		DrawCircle(myHero.x, myHero.y, myHero.z, wRange, 0x111111)
 	end
+end
+
+function KeyBindings()
+	UltimateKey = Config.ComboS.UltimateKey
 end
