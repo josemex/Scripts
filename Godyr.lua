@@ -2,7 +2,7 @@ if myHero.charName ~= "Udyr" then return end
 
 --Auto Download Required LIBS
 
-local version = 0.2
+local version = 0.3
 local scriptName = "Godyr"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
@@ -88,6 +88,11 @@ function OnLoad()
    EnemyMinions = minionManager(MINION_ENEMY, 600, myHero, MINION_SORT_HEALTH_ASC)
 	 JMinions = minionManager(MINION_JUNGLE, qRange, myHero)
    PrintFloatText(myHero, 11, "LETS DISRESPECT!")
+        if _G.MMA_Loaded then
+     	print('MMA detected, using MMA compatibility')
+     elseif _G.AutoCarry.Orbwalker then
+    	print('SAC detected, using SAC compatibility')
+     end
 end
 
 function OnTick()
@@ -482,5 +487,28 @@ function GetJungleMob()
 	end
 	for _, Mob in pairs(JungleMobs) do
 		if ValidTarget(Mob, Udyr.R["range"]) then return Mob end
+	end
+end
+
+function GetCustomTarget()
+	ts:update()
+    if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
+    if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
+    return ts.target
+end
+
+function OrbwalkToPosition(position)
+	if position ~= nil then
+		if _G.MMA_Loaded then
+			_G.moveToCursor(position.x, position.z)
+		elseif _G.AutoCarry and _G.AutoCarry.Orbwalker then
+			_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(position)
+		end
+	else
+		if _G.MMA_Loaded then
+			return
+		elseif _G.AutoCarry and _G.AutoCarry.Orbwalker then
+			_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
+		end
 	end
 end
