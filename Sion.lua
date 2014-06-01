@@ -30,9 +30,6 @@ end
 
 if DOWNLOADING_LIBS then print("Downloading required libraries, please wait...") return end
 
-if autoUpdate then
-    SourceUpdater(scriptName, version, "raw.github.com", "/LucasRPC/Scripts/master/Godyr.lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME):SetSilent(silentUpdate):CheckUpdate()
-end
 
 require "VPrediction"
 require "SourceLib"
