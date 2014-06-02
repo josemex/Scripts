@@ -63,7 +63,6 @@ end
 function OnTick()
     GlobalInfos()
     ts:update()
-		KillSteal()
     if Config.ComboS.Fight then Fight() end
     if UltimateKey then SionUltimate() end
     if Config.jungle.Clear then
@@ -211,16 +210,17 @@ function CastItems(target)
 end
 
 function KillSteal()
-	for i=1, heroManager.iCount do
-		local enemy = heroManager:GetHero(i)
-		if ValidTarget(enemy) and Config.misc.KillSteal then
-			qDmg = getDmg("Q",enemy,myHero) or 0
-			if enemy.health <= qDmg and GetDistance(enemy) <= QRange and QREADY then
-				CastSpell(_Q, enemy)
-			end
-		end
-	end
-end
+
+	qDmg = getDmg(_Q, Target, myHero)
+     if Config.misc.KillSteal then
+         if Target.health < qDmg then
+         	if GetDistance(Target, QRange) then
+         		if myHero:CanUseSpell(_Q) == READY then
+             		CastSpell(_Q, Target)
+             	end
+             end
+         end
+     end
 
 function Fight()
 	if ValidTarget(ts.target) then
