@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.5<</font> ")
+       PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.51<</font> ")
 end
  
 local RREADY, QREADY, WREADY, EREADY
@@ -8,7 +8,7 @@ local prediction
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.5
+local version = 1.51
 local scriptName = "BioZed"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
@@ -170,7 +170,6 @@ function LoadMenu()
                 Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
             end
         end
-        Config.ComboS:addParam("R", "Use 'R'", SCRIPT_PARAM_ONOFF, false)
    
      Config:addSubMenu("BioZed - Harass Settings", "harass")
         Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
@@ -187,9 +186,6 @@ function LoadMenu()
         Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
         Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
         Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
-               
-    Config:addSubMenu("BioZed - Misc", "lmisc")
-        Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
  
     Config:addSubMenu("BioZed - Farm", "lfarm")
         Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
@@ -263,7 +259,7 @@ function Fight()
         for i = 1, heroManager.iCount, 1 do
         if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
             for i = 1, heroManager.iCount, 1 do
-	            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] and Config.ComboS.R then CastR(ts.target) end
+	            if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
 	            if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
 	                if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
 	                    if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
