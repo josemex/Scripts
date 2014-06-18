@@ -29,7 +29,7 @@ function OnLoad()
 	NidaleeConfig:addParam("Q", "Cast Q", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	NidaleeConfig:addParam("AutoIgnite", "KillSteal Ignite",  SCRIPT_PARAM_ONOFF, true)
 	NidaleeConfig:addParam("sbtwHealSlider", "Auto Heal if Health below %: ",  SCRIPT_PARAM_SLICE, 50, 0, 100, -1)
-	NidaleeConfig:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
+	--NidaleeConfig:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
 	NidaleeConfig:addTS(ts)
 	
 	ts.name = "Da Vinci's Nidalee"
@@ -50,9 +50,9 @@ function OnTick()
 	if ts.target ~= nil and NidaleeConfig.Q then
 		ProdictQ:EnableTarget(ts.target, true)
 	end
-	if ts.target == nil and NidaleeConfig.Q and NidaleeConfig.Movement then
-                myHero:MoveTo(mousePos.x, mousePos.z)
-        end
+	--if ts.target == nil and NidaleeConfig.Q and NidaleeConfig.Movement then
+                --myHero:MoveTo(mousePos.x, mousePos.z)
+        --end
 end
 
 function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
