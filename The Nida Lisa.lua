@@ -1,48 +1,12 @@
 if myHero.charName ~= "Nidalee" then return end
 
---Auto Download Required LIBS
-
-local REQUIRED_LIBS = {
-		["SOW"] = "https://raw.github.com/honda7/BoL/master/Common/SOW.lua",
-		["SourceLib"] = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua",
-
-}
-
-local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
-local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
-
-function AfterDownload()
-	DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
-	if DOWNLOAD_COUNT == 0 then
-		DOWNLOADING_LIBS = false
-		print("<b>[Nidalee]: Required libraries downloaded successfully, please reload (double F9).</b>")
-	end
-end
-
-for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
-	if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
-		require(DOWNLOAD_LIB_NAME)
-	else
-		DOWNLOADING_LIBS = true
-		DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
-		DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
-	end
-end
-
-if DOWNLOADING_LIBS then return end
---End auto downloading LIBS
-
 
 require "Collision"
 require "Prodiction"
-require "SourceLib"
-require "SOW"
-require "VPrediction"
 
 local Prodict = ProdictManager.GetInstance()
 local ProdictQ
 local ProdictQCol
-local VP = nil
 local ignite = nil
 local ts = {}
 local NidaleeConfig = {}
@@ -50,8 +14,6 @@ local NidaleeConfig = {}
 local function getHitBoxRadius(target)
 	return GetDistance(target, target.minBBox)
 end
-
-
 
 local function CastQ(unit, pos, spell)
 	if GetDistance(pos) - getHitBoxRadius(unit)/2 < 1500 and myHero:GetSpellData(_Q).name == "JavelinToss" then
@@ -61,16 +23,12 @@ local function CastQ(unit, pos, spell)
 end
 
 function OnLoad()
-   VP = VPrediction()
-   SOWi = SOW(VP)
 
 	ts = TargetSelector(TARGET_LESS_CAST, 1500, DAMAGE_MAGIC)
 	NidaleeConfig = scriptConfig("Da Vinci's Nidalee", "NidaleeAdv")
 	NidaleeConfig:addParam("Q", "Cast Q", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	NidaleeConfig:addParam("AutoIgnite", "KillSteal Ignite",  SCRIPT_PARAM_ONOFF, true)
 	NidaleeConfig:addParam("sbtwHealSlider", "Auto Heal if Health below %: ",  SCRIPT_PARAM_SLICE, 50, 0, 100, -1)
-	NidaleeConfig:addSubMenu("Orbwalking", "Orbwalking")
-        SOWi:LoadToMenu(NidaleeConfig.Orbwalking)
 	NidaleeConfig:addTS(ts)
 	
 	ts.name = "Da Vinci's Nidalee"
