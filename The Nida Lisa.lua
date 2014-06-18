@@ -64,7 +64,7 @@ function OnLoad()
    VP = VPrediction()
    SOWi = SOW(VP)
 
-	ts = TargetSelector(TARGET_LESS_CAST, 1700, DAMAGE_MAGIC)
+	ts = TargetSelector(TARGET_LESS_CAST, 1500, DAMAGE_MAGIC)
 	NidaleeConfig = scriptConfig("Da Vinci's Nidalee", "NidaleeAdv")
 	NidaleeConfig:addParam("Q", "Cast Q", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	NidaleeConfig:addParam("AutoIgnite", "KillSteal Ignite",  SCRIPT_PARAM_ONOFF, true)
@@ -75,8 +75,8 @@ function OnLoad()
 	
 	ts.name = "Da Vinci's Nidalee"
 	
-	ProdictQ = Prodict:AddProdictionObject(_Q, 1700, 1300, 0.125, 60, myHero, CastQ)
-	ProdictQCol = Collision(1700, 1300, 0.125, 60)
+	ProdictQ = Prodict:AddProdictionObject(_Q, 1500, 1300, 0.125, 30, myHero, CastQ)
+	ProdictQCol = Collision(1500, 1300, 0.125, 30)
 	for I = 1, heroManager.iCount do
 		local hero = heroManager:GetHero(I)
 		if hero.team ~= myHero.team then
