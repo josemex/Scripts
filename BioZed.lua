@@ -165,13 +165,7 @@ function LoadMenu()
 	Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
 	Config.ComboS:addParam("rSwap", "Swap to R shadow if safer when mark kills", SCRIPT_PARAM_ONOFF, false)
 	Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
-	Config.ComboS:addSubMenu("Disable Ult On", "disable")
-	for i = 1, heroManager.iCount, 1 do
-		enemy = heroManager:GetHero(i)
-		if enemy.team ~= myHero.team then
-			Config.ComboS.disable:addParam("DisableUlt"..enemy.charName, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
-		end
-	end
+
 	
 	Config:addSubMenu("BioZed - Combo 2 Settings", "ComboS2") 
 	Config.ComboS2:addParam("Fight2", "BioCombo", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
@@ -267,8 +261,8 @@ function Fight()
 	if ts.target then
 
 			if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-				if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..enemy.charName] then CastR(ts.target) return end
-					if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
+				if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) return end
+					if not RREADY or rClone ~= nil then
 						if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
 							if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
 								if MyMana > (WMana+EMana) then
