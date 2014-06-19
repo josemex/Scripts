@@ -1,13 +1,13 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-	PrintChat("<font color=\"#FF0000\" >>BioZed By Lucas and Pyryoer v 1.61<</font> ")
+	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.62 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.61
+local version = 1.62
 local scriptName = "BioZed"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
@@ -93,13 +93,13 @@ function OnTick()
 	HarassKey = Config.harass.harassKey
 	if HarassKey then Harass() end
 	if (myHero:GetSpellData(_R).name == "ZedR2") then
-	for i = 1, heroManager.iCount, 1 do
-		local enemyhero = heroManager:getHero(i)
-		if enemyhero.team ~= myHero.team and TargetHaveBuff("zedulttargetmark", enemyhero) then 
-			ts.target = enemyhero
+		for i = 1, heroManager.iCount, 1 do
+			local enemyhero = heroManager:getHero(i)
+			if enemyhero.team ~= myHero.team and TargetHaveBuff("zedulttargetmark", enemyhero) then 
+				ts.target = enemyhero
+			end
 		end
-end
-end
+	end
 	SetCooldowns()
 	if Config.ComboS.Fight then Fight() end
 	if Config.ComboS2.Fight2 then Fight2() end
@@ -169,7 +169,7 @@ function LoadMenu()
 	for i = 1, heroManager.iCount, 1 do
 		enemy = heroManager:GetHero(i)
 		if enemy.team ~= myHero.team then
-			Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
+			Config.ComboS.disable:addParam("DisableUlt"..enemy.charName, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
 		end
 	end
 	
@@ -195,8 +195,6 @@ function LoadMenu()
 	Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
 	Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
 	
-	Config:addSubMenu("BioZed - Misc", "lmisc")
-	Config.lmisc:addParam("AutoE", "Auto E", SCRIPT_PARAM_ONOFF, true)
 	
 	Config:addSubMenu("BioZed - Farm", "lfarm")
 	Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
@@ -267,10 +265,9 @@ function Fight()
 		ts.range = 900
 	end
 	if ts.target then
-		for i = 1, heroManager.iCount, 1 do
+
 			if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-				for i = 1, heroManager.iCount, 1 do
-					if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
+				if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..enemy.charName] then CastR(ts.target) return end
 					if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
 						if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
 							if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
@@ -335,8 +332,8 @@ function Fight()
 					end
 				end
 			end
-		end
-	end
+		
+	
 end
 
 function Fight2()
