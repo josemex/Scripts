@@ -240,8 +240,8 @@ local JumpSpots =
 		
 		ts.name = "Da Vinci's Nidalee"
 		
-		ProdictQ = Prodict:AddProdictionObject(_Q, 1700, 1300, 0.125, 60, myHero, CastQ)
-	ProdictQCol = Collision(1700, 1300, 0.125, 60)
+		ProdictQ = Prodict:AddProdictionObject(_Q, 1500, 1250, 0.250, 30, myHero, CastQ)
+	ProdictQCol = Collision(1500, 1300, 0.125, 30)
 		for I = 1, heroManager.iCount do
 			local hero = heroManager:GetHero(I)
 			if hero.team ~= myHero.team then
