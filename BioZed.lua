@@ -256,17 +256,18 @@ function CountEnemies(point, range)
 end
 
 function Fight()
-	if Config.ComboS.wSwap then Swap() end
+if Config.ComboS.wSwap then Swap() end
 	if QREADY and EREADY and WREADY and RREADY then 
 		ts.range = 1200
 	else
 		ts.range = 900
 	end
 	if ts.target then
-
+		for i = 1, heroManager.iCount, 1 do
 			if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-				if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) return end
-					if not RREADY or rClone ~= nil then
+				for i = 1, heroManager.iCount, 1 do
+					if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
+					if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
 						if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
 							if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
 								if MyMana > (WMana+EMana) then
@@ -314,7 +315,7 @@ function Fight()
 				end
 				if ValidTarget(ts.target) then
 					local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
-					if UltDmg >= ts.target.health then
+					if UltDmg >= ts.target.health and not Config.ComboS.disable["DisableUlt"..i] then
 						if GetDistance(ts.target, myHero) < 1125 and GetDistance(ts.target, myHero) > 750 then
 							local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
 							if QREADY and EREADY and RREADY and not wClone and not rClone then
@@ -330,8 +331,8 @@ function Fight()
 					end
 				end
 			end
-		
-	
+		end
+	end
 end
 
 function Fight2()
