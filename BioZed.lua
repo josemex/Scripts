@@ -92,12 +92,14 @@ function OnTick()
 	GlobalInfos()
 	HarassKey = Config.harass.harassKey
 	if HarassKey then Harass() end
+	if (myHero:GetSpellData(_R).name == "ZedR2") then
 	for i = 1, heroManager.iCount, 1 do
 		local enemyhero = heroManager:getHero(i)
 		if enemyhero.team ~= myHero.team and TargetHaveBuff("zedulttargetmark", enemyhero) then 
 			ts.target = enemyhero
 		end
-	end
+end
+end
 	SetCooldowns()
 	if Config.ComboS.Fight then Fight() end
 	if Config.ComboS2.Fight2 then Fight2() end
