@@ -1,12 +1,48 @@
 if myHero.charName ~= "Nidalee" then return end
 
+--Auto Download Required LIBS
+
+local REQUIRED_LIBS = {
+		["SOW"] = "https://raw.github.com/honda7/BoL/master/Common/SOW.lua",
+		["SourceLib"] = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua",
+
+}
+
+local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
+local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
+
+function AfterDownload()
+	DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
+	if DOWNLOAD_COUNT == 0 then
+		DOWNLOADING_LIBS = false
+		print("<b>[Nidalee]: Required libraries downloaded successfully, please reload (double F9).</b>")
+	end
+end
+
+for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
+	if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
+		require(DOWNLOAD_LIB_NAME)
+	else
+		DOWNLOADING_LIBS = true
+		DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
+		DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
+	end
+end
+
+if DOWNLOADING_LIBS then return end
+--End auto downloading LIBS
+
 
 require "Collision"
 require "Prodiction"
+require "SourceLib"
+require "SOW"
+require "VPrediction"
 
 local Prodict = ProdictManager.GetInstance()
 local ProdictQ
 local ProdictQCol
+local VP = nil
 local ignite = nil
 local ts = {}
 local NidaleeConfig = {}
@@ -15,8 +51,10 @@ local function getHitBoxRadius(target)
 	return GetDistance(target, target.minBBox)
 end
 
+
+
 local function CastQ(unit, pos, spell)
-	if GetDistance(pos) - getHitBoxRadius(unit)/2 < 1500 and myHero:GetSpellData(_Q).name == "JavelinToss" then
+	if GetDistance(pos) - getHitBoxRadius(unit)/2 < 1300 and myHero:GetSpellData(_Q).name == "JavelinToss" then
 		local willCollide = ProdictQCol:GetMinionCollision(pos, myHero)
 		if not willCollide then CastSpell(_Q, pos.x, pos.z) end
 	end
@@ -29,7 +67,7 @@ function OnLoad()
 	NidaleeConfig:addParam("Q", "Cast Q", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	NidaleeConfig:addParam("AutoIgnite", "KillSteal Ignite",  SCRIPT_PARAM_ONOFF, true)
 	NidaleeConfig:addParam("sbtwHealSlider", "Auto Heal if Health below %: ",  SCRIPT_PARAM_SLICE, 50, 0, 100, -1)
-	--NidaleeConfig:addParam("Movement", "Move To Mouse", SCRIPT_PARAM_ONOFF, true)
+	NidaleeConfig:addParam("Draw", "Draw Q",  SCRIPT_PARAM_ONOFF, false)
 	NidaleeConfig:addTS(ts)
 	
 	ts.name = "Da Vinci's Nidalee"
@@ -43,51 +81,47 @@ function OnLoad()
 		end
 	end
 end
-PrintChat("<font color=\"#FF0000\" >> The Nida Lisa by Da Vinci <</font> ")
+PrintChat("<font color=\"#FF0000\" >>The Nida Lisa by Da Vinci <</font> ")
 function OnTick()
 	GlobalInfos()
 	ts:update()
 	if ts.target ~= nil and NidaleeConfig.Q then
 		ProdictQ:EnableTarget(ts.target, true)
 	end
-	--if ts.target == nil and NidaleeConfig.Q and NidaleeConfig.Movement then
-                --myHero:MoveTo(mousePos.x, mousePos.z)
-        --end
 end
 
+--Lagfree Circles by barasia, vadash and viseversa
 function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
-    radius = radius or 300
-  quality = math.max(8,round(180/math.deg((math.asin((chordlength/(2*radius)))))))
-  quality = 2 * math.pi / quality
-  radius = radius*.92
-    local points = {}
-    for theta = 0, 2 * math.pi + quality, quality do
-        local c = WorldToScreen(D3DXVECTOR3(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
-        points[#points + 1] = D3DXVECTOR2(c.x, c.y)
-    end
-    DrawLines2(points, width or 1, color or 4294967295)
+	radius = radius or 300
+	quality = math.max(8,round(180/math.deg((math.asin((chordlength/(2*radius)))))))
+	quality = 2 * math.pi / quality
+	radius = radius*.92
+	local points = {}
+	for theta = 0, 2 * math.pi + quality, quality do
+		local c = WorldToScreen(D3DXVECTOR3(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
+		points[#points + 1] = D3DXVECTOR2(c.x, c.y)
+	end
+	DrawLines2(points, width or 1, color or 4294967295)
 end
-function round(num) 
- if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
+
+function round(num)
+	if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
 end
+
 function DrawCircle2(x, y, z, radius, color)
-    local vPos1 = Vector(x, y, z)
-    local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
-    local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
-    local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
-    if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
-        DrawCircleNextLvl(x, y, z, radius, 1, color, Menu.Draw.LFC.CL) 
-    end
+	local vPos1 = Vector(x, y, z)
+	local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
+	local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
+	local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
+	if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
+		DrawCircleNextLvl(x, y, z, radius, 1, color, 75) 
+	end
 end
 
 function OnDraw()
-	if ts.target ~= nil then
-		local dist = getHitBoxRadius(ts.target)/2
-		DrawCircle(myHero.x, myHero.y, myHero.z, 1500, 0x7F006E)
-		if GetDistance(ts.target) - dist < 1500 then
-			DrawCircle(ts.target.x, ts.target.y, ts.target.z, dist, 0x7F006E)
-		end
-	end
+	if NidaleeConfig.Draw then
+		DrawCircle(myHero.x, myHero.y, myHero.z, 1500, ARGB(255,255,0,0))
+end
 end
 
 function UseSelfHeal()
@@ -95,13 +129,6 @@ function UseSelfHeal()
             CastSpell(_E, myHero)
     end
 end
-
-function Ignite()
-        if myHero:GetSpellData(SUMMONER_1).name:find("SummonerDot") then ignite = SUMMONER_1
-        elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerDot") then ignite = SUMMONER_2
-        end
-end
-
 
 function GlobalInfos()
         QREADY = (myHero:CanUseSpell(_Q) == READY)
