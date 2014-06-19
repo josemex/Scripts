@@ -1,13 +1,13 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.71 <</font> ")
+	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.72 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.71
+local version = 1.72
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
@@ -66,12 +66,14 @@ function OnLoad()
 	LoadVariables()
 	LoadMenu()
 	Ignite()
+	if (myHero:GetSpellData(_R).name == "ZedR2") then
 	for i=1, heroManager.iCount do
 		local champ = heroManager:GetHero(i)
 		if champ.team ~= myHero.team then
 			EnemysInTable = EnemysInTable + 1
 			EnemyTable[EnemysInTable] = { hero = champ, Name = champ.charName, p = 0, q = 0, q2 = 0, e = 0, r = 0, IndicatorText = "", IndicatorPos, NotReady = false, Pct = 0}
 		end
+	end
 	end
 	PrintFloatText(myHero,11,"LETS RAPE >:D !")
 	EnemyMinions = minionManager(MINION_ENEMY, 900, myHero, MINION_SORT_HEALTH_ASC)
@@ -169,13 +171,6 @@ function LoadMenu()
 	Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
 	Config.ComboS:addParam("rSwap", "Swap to R shadow if safer when mark kills", SCRIPT_PARAM_ONOFF, false)
 	Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
-	Config.ComboS:addSubMenu("Disable Ult On", "disable")
-	for i = 1, heroManager.iCount, 1 do
-		enemy = heroManager:GetHero(i)
-		if enemy.team ~= myHero.team then
-			Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
-		end
-	end
 
 	
 	Config:addSubMenu("BioZed - Combo 2 Settings", "ComboS2") 
@@ -270,11 +265,9 @@ if Config.ComboS.wSwap then Swap() end
 		ts.range = 900
 	end
 	if ts.target then
-		for i = 1, heroManager.iCount, 1 do
 			if not (TargetHaveBuff("JudicatorIntervention", ts.target) or TargetHaveBuff("Undying Rage", ts.target)) then
-				for i = 1, heroManager.iCount, 1 do
-					if RREADY and MyMana > (QMana + EMana) and not Config.ComboS.disable["DisableUlt"..i] then CastR(ts.target) end
-					if not RREADY or rClone ~= nil or Config.ComboS.disable["DisableUlt"..i] then
+					if RREADY and MyMana > (QMana + EMana) then CastR(ts.target) end
+					if not RREADY or rClone ~= nil then
 						if myHero:GetSpellData(_W).name ~= "zedw2" and WREADY and ((GetDistance(ts.target) < 700) or (GetDistance(ts.target) > 125 and not RREADY)) then
 							if not (Config.ComboS.NoWWhenUlt and ((myHero:GetSpellData(_R).name == "ZedR2") or (rClone ~= nil and rClone.valid))) then
 								if MyMana > (WMana+EMana) then
@@ -316,13 +309,12 @@ if Config.ComboS.wSwap then Swap() end
 				
 				
 				if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
-					if not Config.ComboS.disable["DisableUlt"..i] then
+				
 						CastSpell(_R)
-					end
 				end
 				if ValidTarget(ts.target) then
 					local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
-					if UltDmg >= ts.target.health and not Config.ComboS.disable["DisableUlt"..i] then
+					if UltDmg >= ts.target.health then
 						if GetDistance(ts.target, myHero) < 1125 and GetDistance(ts.target, myHero) > 750 then
 							local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
 							if QREADY and EREADY and RREADY and not wClone and not rClone then
@@ -339,8 +331,6 @@ if Config.ComboS.wSwap then Swap() end
 				end
 			end
 		end
-	end
-end
 
 function Fight2()
 	if Config.ComboS2.wSwap then Swap() end
