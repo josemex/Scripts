@@ -1,13 +1,13 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.62 <</font> ")
+	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.63 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.62
+local version = 1.63
 local scriptName = "BioZed"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
