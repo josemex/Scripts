@@ -169,6 +169,13 @@ function LoadMenu()
 	Config.ComboS:addParam("NoWWhenUlt","Don't use W when Zed ult", SCRIPT_PARAM_ONOFF, true)
 	Config.ComboS:addParam("rSwap", "Swap to R shadow if safer when mark kills", SCRIPT_PARAM_ONOFF, false)
 	Config.ComboS:addParam("wSwap", "Swap with W to get closer to target", SCRIPT_PARAM_ONOFF, false)
+	Config.ComboS:addSubMenu("Disable Ult On", "disable")
+	for i = 1, heroManager.iCount, 1 do
+		enemy = heroManager:GetHero(i)
+		if enemy.team ~= myHero.team then
+			Config.ComboS.disable:addParam("DisableUlt"..i, " >> "..enemy.charName, SCRIPT_PARAM_ONOFF, false)
+		end
+	end
 
 	
 	Config:addSubMenu("BioZed - Combo 2 Settings", "ComboS2") 
