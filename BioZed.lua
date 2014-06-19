@@ -1,13 +1,13 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.7 <</font> ")
+	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.73 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.7
+local version = 1.73
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
