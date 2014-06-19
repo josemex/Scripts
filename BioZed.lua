@@ -316,7 +316,7 @@ function Fight()
 				end
 				if ValidTarget(ts.target) then
 					local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
-					if UltDmg >= ts.target.health and not Config.ComboS.disable["DisableUlt"..i] then
+					if UltDmg >= ts.target.health then
 						if GetDistance(ts.target, myHero) < 1125 and GetDistance(ts.target, myHero) > 750 then
 							local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
 							if QREADY and EREADY and RREADY and not wClone and not rClone then
