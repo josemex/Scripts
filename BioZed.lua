@@ -391,7 +391,7 @@ function Fight2()
 			end
 		end
 		
-		if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS2.SwapUlt) then
+		if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
 			if not Config.ComboS.disable["DisableUlt"..i] then
 				CastSpell(_R)
 			end
