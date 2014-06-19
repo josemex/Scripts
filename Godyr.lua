@@ -2,44 +2,43 @@ if myHero.charName ~= "Udyr" then return end
 
 --Auto Download Required LIBS
 
-local version = 0.3
+local REQUIRED_LIBS = {
+		["VPrediction"] = "https://raw.github.com/honda7/BoL/master/Common/VPrediction.lua",
+		["SOW"] = "https://raw.github.com/honda7/BoL/master/Common/SOW.lua",
+		["SourceLib"] = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua",
+
+}
+
+local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
+local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
+
+function AfterDownload()
+	DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
+	if DOWNLOAD_COUNT == 0 then
+		DOWNLOADING_LIBS = false
+		print("<b>[Udyr]: Required libraries downloaded successfully, please reload (double F9).</b>")
+	end
+end
+
+for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
+	if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
+		require(DOWNLOAD_LIB_NAME)
+	else
+		DOWNLOADING_LIBS = true
+		DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
+		DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
+	end
+end
+
+if DOWNLOADING_LIBS then return end
+--End auto downloading LIBS
+local version = 1
 local scriptName = "Godyr"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
 -- Change silentUpdate to true if you wish not to receive any message regarding updates
 local autoUpdate   = true
 local silentUpdate = false
-
-
--- Lib Downloader --
-
-local REQUIRED_LIBS = {
-    ["VPrediction"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/VPrediction.lua",
-    ["SOW"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/SOW.lua",
-    ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
-                    }
-local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
-local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
-
-function AfterDownload()
-    DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
-    if DOWNLOAD_COUNT == 0 then
-        DOWNLOADING_LIBS = false
-        print("<b>Required libraries downloaded successfully, please reload (double F9).</b>")
-    end
-end
-
-for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
-    if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
-        require(DOWNLOAD_LIB_NAME)
-    else
-        DOWNLOADING_LIBS = true
-        DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
-        DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
-    end
-end
-
-if DOWNLOADING_LIBS then print("Downloading required libraries, please wait...") return end
 
 if autoUpdate then
     SourceUpdater(scriptName, version, "raw.github.com", "/LucasRPC/Scripts/master/Godyr.lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME):SetSilent(silentUpdate):CheckUpdate()
@@ -64,6 +63,7 @@ local     orange = 0xFFFFE303
 local green = ARGB(255,0,255,0)
 local blue = ARGB(255,0,0,255)
 local red = ARGB(255,255,0,0)
+local enemyMinions = minionManager(MINION_ENEMY, 600, myHero.visionPos, MINION_SORT_HEALTH_ASC)
 local Udyr = {
 	Q = {range = math.huge},
 	W = {range = math.huge},
@@ -83,22 +83,25 @@ function OnLoad()
    SOWi = SOW(VP)
    LoadMenu()
    JungleNames()
-   Ignite()
 	 Tick = GetTickCount()
-   EnemyMinions = minionManager(MINION_ENEMY, 600, myHero, MINION_SORT_HEALTH_ASC)
+   Ignite()
 	 JMinions = minionManager(MINION_JUNGLE, qRange, myHero)
    PrintFloatText(myHero, 11, "LETS DISRESPECT!")
-        if _G.MMA_Loaded then
-     	print('MMA detected, using MMA compatibility')
-     elseif _G.AutoCarry.Orbwalker then
-    	print('SAC detected, using SAC compatibility')
-     end
 end
 
 function OnTick()
     JMinions:update()
     GlobalInfos()
     ts:update()
+    if Config.misc.spame then
+    	CastSpell(_E)
+    end
+		if Config.ComboS.RunNStun then RunNStun() end
+		if Config.ComboS.StunCycle then StunCycle() end
+		if Config.lane.laneclear then laneclear() end
+    if ts.target == nil and Config.ComboS.RunNStun then
+                myHero:MoveTo(mousePos.x, mousePos.z)
+        end
     if Config.ComboS.Fight then Fight() end
     if Config.jungle.Clear then
 		if GetTickCount() - Tick < 750 then return end
@@ -121,6 +124,7 @@ function LoadMenu()
      Config:addSubMenu("Godyr - Combo Settings", "ComboS")          
         Config.ComboS:addParam("Fight", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
 	    Config.ComboS:addParam("StunCycle", "Stun Everyone Around", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("C"))
+	    Config.ComboS:addParam("RunNStun", "Run and Stun", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
 
     Config:addSubMenu("Godyr - Jungle Clear", "jungle")
         Config.jungle:addParam("Clear", "Clear Jungle", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
@@ -129,6 +133,14 @@ function LoadMenu()
 		Config.jungle:addParam("W", "Clear with (W)", 1,true)
 		Config.jungle:addParam("E", "Clear with (E)", 1,true)
 		Config.jungle:addParam("R", "Clear with (R)", 1,true)
+
+	Config:addSubMenu("Godyr - Lane Clear", "lane")
+        Config.lane:addParam("laneclear", "Clear Lane", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
+        Config.lane:addParam("AA","Auto Attack in 'Lane'",1,true)
+        Config.lane:addParam("Q", "Clear with (Q)", 1,true)
+		Config.lane:addParam("W", "Clear with (W)", 1,true)
+		Config.lane:addParam("E", "Clear with (E)", 1,true)
+		Config.lane:addParam("R", "Clear with (R)", 1,true)
    
     Config:addSubMenu("Godyr - Ignite Settings", "lignite")    
         Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Kill Steal"})
@@ -138,6 +150,7 @@ function LoadMenu()
         Config.misc:addParam("autoPotions", "Use potions when HP < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
 	Config.misc:addParam("autoLevel", "Auto Level", SCRIPT_PARAM_LIST, 1, { "Don't use", "Godyr", "Tigerdyr"})
 	Config.misc:addParam("draw", "Draw Range", SCRIPT_PARAM_ONOFF, false)
+	Config.misc:addParam("spame", "Marathon Mode", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("M"))
 
     Config:addSubMenu("Godyr - Orbwalking", "Orbwalking")
         SOWi:LoadToMenu(Config.Orbwalking)
@@ -146,7 +159,7 @@ function LoadMenu()
     Config:addTS(ts)
 end
 
-PrintChat("<font color=\"#FF0000\" >>> Godyr By Lucas v 0.2<</font> ")
+PrintChat("<font color=\"#FF0000\" >>> Godyr By Lucas v1 <</font> ")
 
 function autoPotions()
 	if Config.misc.autoPotions then
@@ -490,25 +503,39 @@ function GetJungleMob()
 	end
 end
 
-function GetCustomTarget()
-	ts:update()
-    if _G.MMA_Target and _G.MMA_Target.type == myHero.type then return _G.MMA_Target end
-    if _G.AutoCarry and _G.AutoCarry.Crosshair and _G.AutoCarry.Attack_Crosshair and _G.AutoCarry.Attack_Crosshair.target and _G.AutoCarry.Attack_Crosshair.target.type == myHero.type then return _G.AutoCarry.Attack_Crosshair.target end
-    return ts.target
+function laneclear()
+if Config.lane.laneclear then
+	enemyMinions:update()
+			for _, minion in pairs(enemyMinions.objects) do
+				if  ValidTarget(minion) then
+					if Config.jungle.AA then
+			myHero:Attack(enemyMinion)
+		end
+		if Config.lane.Q and QREADY then
+			CastSpell(_Q)
+		end
+		if Config.lane.W and WREADY then
+			CastSpell(_W)
+		end
+		if Config.lane.E and EREADY then
+			CastSpell(_E)
+		end
+		if Config.lane.R and RREADY then
+			CastSpell(_R)
+		end
+	end
+end
+end
 end
 
-function OrbwalkToPosition(position)
-	if position ~= nil then
-		if _G.MMA_Loaded then
-			_G.moveToCursor(position.x, position.z)
-		elseif _G.AutoCarry and _G.AutoCarry.Orbwalker then
-			_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(position)
-		end
-	else
-		if _G.MMA_Loaded then
-			return
-		elseif _G.AutoCarry and _G.AutoCarry.Orbwalker then
-			_G.AutoCarry.Orbwalker:OverrideOrbwalkLocation(nil)
+function RunNStun()
+	if Config.ComboS.RunNStun then
+  stunTarget = findClosestEnemy()
+		if EREADY then
+				CastSpell(_E)
+			end
+		if stunTarget ~= nil and GetDistance(stunTarget) <= 600 then
+			myHero:Attack(stunTarget)
 		end
 	end
 end
