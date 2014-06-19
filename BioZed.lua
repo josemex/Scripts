@@ -683,7 +683,7 @@ function Calculations()
 				--EnemyTable[i].NotReady = false
 				--end
 			elseif (not RREADY) and enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg + ciDmg + cItemDmg then
-				EnemyTable[i].IndicatorText = "SBTW"
+				EnemyTable[i].IndicatorText = "Wait For R"
 				EnemyTable[i].IndicatorPos = 0
 				if (QMana + WMana + EMana > MyMana) or not QREADY or not WREADY or not EREADY then
 					EnemyTable[i].NotReady = true
@@ -691,7 +691,7 @@ function Calculations()
 					EnemyTable[i].NotReady = false
 				end 
 			elseif (not WREADY) and enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
-				EnemyTable[i].IndicatorText = "All In Kill"
+				EnemyTable[i].IndicatorText = "Wait for W"
 				EnemyTable[i].IndicatorPos = 0
 				if QMana + EMana > MyMana or not QREADY or not EREADY or not RREADY then
 					EnemyTable[i].NotReady = true
