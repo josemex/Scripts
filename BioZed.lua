@@ -359,14 +359,6 @@ function Fight2()
 		end
 		
 		
-		if Config.lignite.igniteOptions == 2 then
-			if iReady then
-				if GetDistance(ts.target) <= 600 then
-					CastSpell(ignite, ts.target)
-				end
-			end
-		end
-		CastItems(ts.target)
 		if RREADY and rClone ~= nil and Config.ComboS2.rSwap then
 			if isDead then
 				if CountEnemies(myHero, 250) > CountEnemies(rClone, 250) then
