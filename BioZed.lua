@@ -72,7 +72,6 @@ function OnLoad()
 			EnemyTable[EnemysInTable] = { hero = champ, Name = champ.charName, p = 0, q = 0, q2 = 0, e = 0, r = 0, IndicatorText = "", IndicatorPos, NotReady = false, Pct = 0}
 		end
 	end
-	end
 	PrintFloatText(myHero,11,"LETS RAPE >:D !")
 	EnemyMinions = minionManager(MINION_ENEMY, 900, myHero, MINION_SORT_HEALTH_ASC)
 	qEnergy = {75, 70, 65, 60, 55}
