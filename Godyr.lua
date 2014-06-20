@@ -63,7 +63,7 @@ local     orange = 0xFFFFE303
 local green = ARGB(255,0,255,0)
 local blue = ARGB(255,0,0,255)
 local red = ARGB(255,255,0,0)
-local enemyMinions = minionManager(MINION_ENEMY, 600, myHero.visionPos, MINION_SORT_HEALTH_ASC)
+--local enemyMinions = minionManager(MINION_ENEMY, 600, myHero.visionPos, MINION_SORT_HEALTH_ASC)
 local Udyr = {
 	Q = {range = math.huge},
 	W = {range = math.huge},
@@ -98,7 +98,7 @@ function OnTick()
     end
 		if Config.ComboS.RunNStun then RunNStun() end
 		if Config.ComboS.StunCycle then StunCycle() end
-		if Config.lane.laneclear then laneclear() end
+		--if Config.lane.laneclear then laneclear() end
     if ts.target == nil and Config.ComboS.RunNStun then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
@@ -134,13 +134,13 @@ function LoadMenu()
 		Config.jungle:addParam("E", "Clear with (E)", 1,true)
 		Config.jungle:addParam("R", "Clear with (R)", 1,true)
 
-	Config:addSubMenu("Godyr - Lane Clear", "lane")
-        Config.lane:addParam("laneclear", "Clear Lane", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
-        Config.lane:addParam("AA","Auto Attack in 'Lane'",1,true)
-        Config.lane:addParam("Q", "Clear with (Q)", 1,true)
-		Config.lane:addParam("W", "Clear with (W)", 1,true)
-		Config.lane:addParam("E", "Clear with (E)", 1,true)
-		Config.lane:addParam("R", "Clear with (R)", 1,true)
+	--Config:addSubMenu("Godyr - Lane Clear", "lane")
+        --Config.lane:addParam("laneclear", "Clear Lane", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
+        --Config.lane:addParam("AA","Auto Attack in 'Lane'",1,true)
+        --Config.lane:addParam("Q", "Clear with (Q)", 1,true)
+		--Config.lane:addParam("W", "Clear with (W)", 1,true)
+		--Config.lane:addParam("E", "Clear with (E)", 1,true)
+		--Config.lane:addParam("R", "Clear with (R)", 1,true)
    
     Config:addSubMenu("Godyr - Ignite Settings", "lignite")    
         Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Kill Steal"})
