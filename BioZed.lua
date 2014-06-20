@@ -449,23 +449,22 @@ function Harass()
 end
 
 function CastQ()
-if ValidTarget(ts.target) and not ts.target.dead and ts.target.visible and GetDistance(ts.target) < Qrange then
-local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth)
-end
-if QREADY then
-				CastSpell(_Q, pos.x, pos.z)
-				end
-			
+     if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
+     local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
+        if HitChance >= 1 then
+            CastSpell(_Q, CastPosition.x, CastPosition.z)    
+        end
+    end
 end
 
 function CastQClone()
-	if ValidTarget(ts.target) and GetDistance(ts.target, wClone) < qRange then
-		local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth, wClone, false)
+    if ValidTarget(ts.target) and GetDistance(ts.target, wClone) < qRange then
+     local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, wClone, false)
+        if HitChance >= 1 then
+            CastSpell(_Q, CastPosition.x, CastPosition.z)    
+        end
+    end
 end
-if QREADY then
-				CastSpell(_Q, pos.x, pos.z)
-				end
-	end
 
 
 
