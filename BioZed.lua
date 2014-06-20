@@ -54,7 +54,6 @@ end
 
 --
 
-require "Prodiction"
 
 function OnLoad()
 	ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 900 ,DAMAGE_PHYSICAL)
