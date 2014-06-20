@@ -32,7 +32,7 @@ end
 
 if DOWNLOADING_LIBS then return end
 --End auto downloading LIBS
-local version = 1
+local version = 1.0
 local scriptName = "Godyr"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
@@ -159,7 +159,7 @@ function LoadMenu()
     Config:addTS(ts)
 end
 
-PrintChat("<font color=\"#FF0000\" >>> Godyr By Lucas v1 <</font> ")
+PrintChat("<font color=\"#FF0000\" >>> Godyr By Lucas v 1 <</font> ")
 
 function autoPotions()
 	if Config.misc.autoPotions then
