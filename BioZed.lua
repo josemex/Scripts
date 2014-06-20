@@ -66,7 +66,6 @@ function OnLoad()
 	LoadVariables()
 	LoadMenu()
 	Ignite()
-	if (myHero:GetSpellData(_R).name == "ZedR2") then
 	for i=1, heroManager.iCount do
 		local champ = heroManager:GetHero(i)
 		if champ.team ~= myHero.team then
