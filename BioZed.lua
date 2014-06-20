@@ -1,13 +1,13 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.73 <</font> ")
+	PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.74 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.73
+local version = 1.74
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
@@ -451,7 +451,7 @@ end
 
 function CastQ()
 if ValidTarget(ts.target) and not ts.target.dead and ts.target.visible and GetDistance(ts.target) < Qrange then
-local pos, info = Prodiction.GetCircularAOEPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth)
+local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth)
 end
 if QREADY then
 				CastSpell(_Q, pos.x, pos.z)
@@ -461,7 +461,7 @@ end
 
 function CastQClone()
 	if ValidTarget(ts.target) and GetDistance(ts.target, wClone) < qRange then
-		local pos, info = Prodiction.GetCircularAOEPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth, wClone, false)
+		local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth, wClone, false)
 end
 if QREADY then
 				CastSpell(_Q, pos.x, pos.z)
