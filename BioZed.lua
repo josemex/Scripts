@@ -17,7 +17,7 @@ local Zed = {
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
 -- Change silentUpdate to true if you wish not to receive any message regarding updates
-local autoUpdate = false
+local autoUpdate = true
 local silentUpdate = false
 
 
