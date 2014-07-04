@@ -27,7 +27,7 @@ local REQUIRED_LIBS = {
     ["VPrediction"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/VPrediction.lua",
     ["SOW"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/SOW.lua",
     ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
-    ["Selector"] = "https://raw.github.com/LegendBot/Scripts/master/Common/Selector.lua",
+    ["Selector"] = "https://raw.githubusercontent.com/LegendBot/Scripts/master/Common/Selector.lua",
 }
 local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
 local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
