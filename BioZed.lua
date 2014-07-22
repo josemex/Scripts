@@ -7,7 +7,7 @@ local RREADY, QREADY, WREADY, EREADY
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 1.9
+local version = 1.9.1
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
