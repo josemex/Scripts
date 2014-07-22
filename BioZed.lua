@@ -27,7 +27,7 @@ local REQUIRED_LIBS = {
     ["VPrediction"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/VPrediction.lua",
     ["SOW"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/SOW.lua",
     ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
-    ["Selector"] = "https://raw.githubusercontent.com/LegendBot/Scripts/master/Common/Selector.lua",
+    ["Selector"] = "http://iuser99.com/scripts/Selector.lua",
 }
 local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
 local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
@@ -68,7 +68,6 @@ function OnLoad()
     SOWi = SOW(VP)
     LoadVariables()
     TS = SimpleTS(STS_LESS_CAST_MAGIC)
-    Selector.Instance()
     LoadMenu()
     Ignite()
     for i=1, heroManager.iCount do
@@ -591,7 +590,7 @@ function GrabTarget()
         elseif _G.AutoCarry and Config.TS.TS == 4 then
             return _G.AutoCarry.Crosshair:GetTarget()
         elseif _G.Selector_Enabled and Config.TS.TS == 3 then
-            return Selector.GetTarget(SelectorMenu.Get().mode, 'AD', {distance = MaxRange()})
+            return Selector.GetTarget(LESSCASTADVANCED, 'AD', {distance = Spells.R.range})
         elseif Config.TS.TS == 2 then
             return TS:GetTarget(MaxRange())
         elseif Config.TS.TS == 1 then
