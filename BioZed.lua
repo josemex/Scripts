@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas and Pyryoer v 1.91 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 1.91 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
