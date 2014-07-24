@@ -1,13 +1,13 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.1 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
 local VP
 local ts
 local UltTargets = GetEnemyHeroes()
-local version = 2.0
+local version = 2.1
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
@@ -395,7 +395,6 @@ function Fight2()
         end
         
         if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
-            if not Config.ComboS.disable["DisableUlt"..i] then
                 CastSpell(_R)
             end
         end
