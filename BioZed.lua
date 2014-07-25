@@ -472,29 +472,29 @@ if Config.SSettings.Vpred then
         local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth)
         if pos and pos.x and pos.z and info and info.hitchance >= 1 and GetDistance(pos) < Qrange then
             CastSpell(_Q, pos.x, pos.z)
+        end
     end
-end
 end
 end
 end
 
 function CastQClone()
-    if Config.SSettings.Vpred then
+   -- if Config.SSettings.Vpred then
     if ValidTarget(ts.target) and GetDistance(ts.target, wClone) < qRange then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, wClone, false)
         if HitChance >= 1 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
         end
     end
-    else if Config.SSettings.Prod then
-        if QREADY and ValidTarget(ts.target) and not ts.target.dead and ts.target.visible then
-        local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth, wClone, false)
-        if pos and pos.x and pos.z and info and info.hitchance >= 1 and GetDistance(pos) < Qrange then
-            CastSpell(_Q, pos.x, pos.z)
-    end
-end
-end
-end
+    --else if Config.SSettings.Prod then
+      --  if QREADY and ValidTarget(ts.target) and not ts.target.dead and ts.target.visible then
+      --  local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth, wClone, false)
+     --  if pos and pos.x and pos.z and info and info.hitchance >= 1 and GetDistance(pos) < Qrange then
+      --      CastSpell(_Q, pos.x, pos.z)
+   -- end
+--end
+--end
+--end
 end
 
 
