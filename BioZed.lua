@@ -413,7 +413,6 @@ function Fight2()
             end
         end
     end
-end
 
 function Harass()
     ts.range = 1500
