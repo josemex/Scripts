@@ -390,7 +390,13 @@ function Fight2()
                 end
             end
         end
-        
+                if Config.lignite.igniteOptions == 2 and TargetHaveBuff("zedulttargetmark", ts.target) then
+                    if iReady then
+                        if GetDistance(ts.target) <= 600 then
+                            CastSpell(ignite, ts.target)
+                        end
+                    end
+                end
         CastItems(ts.target)
         if RREADY and rClone ~= nil and Config.ComboS2.rSwap then
             if isDead then
@@ -716,16 +722,16 @@ function Calculations()
                 else
                     EnemyTable[i].NotReady = false
                 end
-                --elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg then
-                --EnemyTable[i].IndicatorText = "W+E+Q+AA Kill"
-                --EnemyTable[i].IndicatorPos = 0
-                --if QMana + WMana + EMana > MyMana or not QREADY or not WREADY or not EREADY then
-                --EnemyTable[i].NotReady = true
-                --else
-                --EnemyTable[i].NotReady = false
-                --end
+                elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg then
+                EnemyTable[i].IndicatorText = "W+E+Q+AA Kill"
+                EnemyTable[i].IndicatorPos = 0
+                if QMana + WMana + EMana > MyMana or not QREADY or not WREADY or not EREADY then
+                EnemyTable[i].NotReady = true
+                else
+                EnemyTable[i].NotReady = false
+                end
             elseif (not RREADY) and enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg + ciDmg + cItemDmg then
-                EnemyTable[i].IndicatorText = "Wait For R"
+                EnemyTable[i].IndicatorText = "Use Combo 2"
                 EnemyTable[i].IndicatorPos = 0
                 if (QMana + WMana + EMana > MyMana) or not QREADY or not WREADY or not EREADY then
                     EnemyTable[i].NotReady = true
@@ -733,7 +739,7 @@ function Calculations()
                     EnemyTable[i].NotReady = false
                 end 
             elseif (not WREADY) and enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
-                EnemyTable[i].IndicatorText = "Wait for W"
+                EnemyTable[i].IndicatorText = "Kill Without W"
                 EnemyTable[i].IndicatorPos = 0
                 if QMana + EMana > MyMana or not QREADY or not EREADY or not RREADY then
                     EnemyTable[i].NotReady = true
@@ -741,7 +747,7 @@ function Calculations()
                     EnemyTable[i].NotReady = false
                 end
             elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
-                EnemyTable[i].IndicatorText = "Just Rape"
+                EnemyTable[i].IndicatorText = "Pff All in Kill"
                 EnemyTable[i].IndicatorPos = 0
                 if QMana + WMana + EMana + RMana > MyMana or not QREADY or not WREADY or not EREADY or not RREADY then
                     EnemyTable[i].NotReady = true
