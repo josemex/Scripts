@@ -1,13 +1,14 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.1 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.2 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
 local VP
 local ts
+local lastSkin = 0
 local UltTargets = GetEnemyHeroes()
-local version = 2.1
+local version = 2.2
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
@@ -53,10 +54,11 @@ end
 if DOWNLOADING_LIBS then print("Downloading required libraries, please wait...") return end
 
 
---
+require "Prodiction"
 
 
 function OnLoad()
+    
     UpdateWeb(true, ScriptName, id, HWID)
     ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 900 ,DAMAGE_PHYSICAL)
     ts.name = "AllClass TS"
@@ -65,7 +67,9 @@ function OnLoad()
     end
     SOWi = SOW(VP)
     LoadVariables()
+    Selector.Instance()
     TS = SimpleTS(STS_LESS_CAST_MAGIC)
+    STS = SimpleTS(STS_PRIORITY_LESS_CAST_MAGIC)
     LoadMenu()
     Ignite()
     for i=1, heroManager.iCount do
@@ -87,6 +91,11 @@ function OnLoad()
 end
 
 function OnTick()
+
+	if Config.VIP.skin and skinChanged() then
+		GenModelPacket("Zed", Config.VIP.skin1)
+		lastSkin = Config.VIP.skin1
+	end
     if GetGame().isOver then
 	UpdateWeb(false, ScriptName, id, HWID)
 	-- This is a var where I stop executing what is in my OnTick()
@@ -137,6 +146,8 @@ function OnUnload()
 end
 
 function LoadVariables()
+
+
     UseSwap = true
     ChampCount = nil
     wClone, rClone = nil, nil
@@ -201,7 +212,14 @@ function LoadMenu()
     Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
     Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
     
-    
+    Config:addSubMenu("BioZed - Prediction","SSettings")
+    Config.SSettings:addParam("Vpred", "Use Vprediction", SCRIPT_PARAM_ONOFF, true)
+    Config.SSettings:addParam("Prod", "Use Prodiction(VIP ONLY)", SCRIPT_PARAM_ONOFF, false)
+
+  Config:addSubMenu("BioZed - Skin Changer", "VIP")
+	Config.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
+	Config.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
+
     Config:addSubMenu("BioZed - Farm", "lfarm")
     Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
     Config.lfarm:addParam("farmQ", "Farm With Q", SCRIPT_PARAM_ONOFF, true)
@@ -211,8 +229,10 @@ function LoadMenu()
     Config:addSubMenu("BioZed - Target Selector","TS")
         Config.TS:addParam("TS","Target Selector",7,2,{ "AllClass", "SourceLib", "Selector", "SAC:Reborn", "MMA" })
         ts = TargetSelector(8,Zed.Q["range"],1,false)
-        Config.TS:addTS(ts)
-    
+        
+    STS:AddToMenu(Config.TS)
+    Config.TS:addTS(ts)
+		
     Config:addSubMenu("BioZed - Orbwalking", "Orbwalking")
     SOWi:LoadToMenu(Config.Orbwalking)
     
@@ -298,7 +318,7 @@ if Config.ComboS.wSwap then Swap() end
                 end
                 
                 
-                if Config.lignite.igniteOptions == 2 then
+                if Config.lignite.igniteOptions == 2 and TargetHaveBuff("zedulttargetmark", ts.target) then
                     if iReady then
                         if GetDistance(ts.target) <= 600 then
                             CastSpell(ignite, ts.target)
@@ -371,14 +391,6 @@ function Fight2()
             end
         end
         
-        
-        if Config.lignite.igniteOptions == 2 then
-            if iReady then
-                if GetDistance(ts.target) <= 600 then
-                    CastSpell(ignite, ts.target)
-                end
-            end
-        end
         CastItems(ts.target)
         if RREADY and rClone ~= nil and Config.ComboS2.rSwap then
             if isDead then
@@ -395,23 +407,7 @@ function Fight2()
                 CastSpell(_R)
             end
         end
-        if ValidTarget(ts.target) then
-            local UltDmg = (getDmg("AD", ts.target, myHero) + ((.15*(myHero:GetSpellData(_R).level)+.5)*((getDmg("Q", ts.target, myHero, 3)*2) + (getDmg("E", ts.target, myHero, 1)))))
-            if UltDmg >= ts.target.health then
-                if GetDistance(ts.target, myHero) < 1125 and GetDistance(ts.target, myHero) > 750 then
-                    local DashPos = myHero + Vector(ts.target.x - myHero.x, 0, ts.target.z - myHero.z):normalized()*550
-                    if QREADY and EREADY and RREADY and not wClone and not rClone then
-                        --PrintChat("Gapclose")
-                        if myHero:GetSpellData(_W).name == "ZedShadowDash" then CastSpell(_W, DashPos.x, DashPos.z) end
-                    end
-                    if wClone and wClone.valid and not rClone then
-                        CastSpell(_W, myHero)
-                        CastSpell(_R, ts.target)
-                    end
-                    
-                end
-            end
-        end
+        
     end
 
 function Harass()
@@ -458,21 +454,41 @@ function Harass()
 end
 
 function CastQ()
+if Config.SSettings.Vpred then
      if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
         if HitChance >= 1 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
         end
     end
+    else if Config.SSettings.Prod then
+    if QREADY and ValidTarget(ts.target) and not ts.target.dead and ts.target.visible then
+        local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth)
+        if pos and pos.x and pos.z and info and info.hitchance >= 1 and GetDistance(pos) < Qrange then
+            CastSpell(_Q, pos.x, pos.z)
+    end
+end
+end
+end
 end
 
 function CastQClone()
+    if Config.SSettings.Vpred then
     if ValidTarget(ts.target) and GetDistance(ts.target, wClone) < qRange then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, wClone, false)
         if HitChance >= 1 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
         end
     end
+    else if Config.SSettings.Prod then
+        if QREADY and ValidTarget(ts.target) and not ts.target.dead and ts.target.visible then
+        local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth, wClone, false)
+        if pos and pos.x and pos.z and info and info.hitchance >= 1 and GetDistance(pos) < Qrange then
+            CastSpell(_Q, pos.x, pos.z)
+    end
+end
+end
+end
 end
 
 
@@ -572,7 +588,7 @@ function CastItems(target)
         if GetDistance(ts.target) <=400 then
             CastItem(3146, target) --Hextech Gunblade
         end
-        if GetDistance(ts.target) <= 350 then
+        if GetDistance(ts.target) <= 300 then
             CastItem(3184, target) --Entropy
             CastItem(3143, target) --Randuin's Omen
             CastItem(3074, target) --Ravenous Hydra
@@ -869,6 +885,34 @@ function OnDraw()
     end
 end
 
+function GenModelPacket(champ, skinId)
+	p = CLoLPacket(0x97)
+	p:EncodeF(myHero.networkID)
+	p.pos = 1
+	t1 = p:Decode1()
+	t2 = p:Decode1()
+	t3 = p:Decode1()
+	t4 = p:Decode1()
+	p:Encode1(t1)
+	p:Encode1(t2)
+	p:Encode1(t3)
+	p:Encode1(bit32.band(t4,0xB))
+	p:Encode1(1)--hardcode 1 bitfield
+	p:Encode4(skinId)
+	for i = 1, #champ do
+		p:Encode1(string.byte(champ:sub(i,i)))
+	end
+	for i = #champ + 1, 64 do
+		p:Encode1(0)
+	end
+	p:Hide()
+	RecvPacket(p)
+end
+
+function skinChanged()
+	return Config.VIP.skin1 ~= lastSkin
+end
+
 function OnBugsplat()
 	UpdateWeb(false, ScriptName, id, HWID)
 end
@@ -877,7 +921,7 @@ end
 HWID = Base64Encode(tostring(os.getenv("PROCESSOR_IDENTIFIER")..os.getenv("USERNAME")..os.getenv("COMPUTERNAME")..os.getenv("PROCESSOR_LEVEL")..os.getenv("PROCESSOR_REVISION")))
 -- DO NOT CHANGE. This is set to your proper ID.
 id = 53
-ScriptName = "BioZed"
+ScriptName = "Your scriptname here"
 
 -- Thank you to Roach and Bilbao for the support!
 assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQIDAAAAJQAAAAgAAIAfAIAAAQAAAAQKAAAAVXBkYXRlV2ViAAEAAAACAAAADAAAAAQAETUAAAAGAUAAQUEAAB2BAAFGgUAAh8FAAp0BgABdgQAAjAHBAgFCAQBBggEAnUEAAhsAAAAXwAOAjMHBAgECAgBAAgABgUICAMACgAEBgwIARsNCAEcDwwaAA4AAwUMDAAGEAwBdgwACgcMDABaCAwSdQYABF4ADgIzBwQIBAgQAQAIAAYFCAgDAAoABAYMCAEbDQgBHA8MGgAOAAMFDAwABhAMAXYMAAoHDAwAWggMEnUGAAYwBxQIBQgUAnQGBAQgAgokIwAGJCICBiIyBxQKdQQABHwCAABcAAAAECAAAAHJlcXVpcmUABAcAAABzb2NrZXQABAcAAABhc3NlcnQABAQAAAB0Y3AABAgAAABjb25uZWN0AAQQAAAAYm9sLXRyYWNrZXIuY29tAAMAAAAAAABUQAQFAAAAc2VuZAAEGAAAAEdFVCAvcmVzdC9uZXdwbGF5ZXI/aWQ9AAQHAAAAJmh3aWQ9AAQNAAAAJnNjcmlwdE5hbWU9AAQHAAAAc3RyaW5nAAQFAAAAZ3N1YgAEDQAAAFteMC05QS1aYS16XQAEAQAAAAAEJQAAACBIVFRQLzEuMA0KSG9zdDogYm9sLXRyYWNrZXIuY29tDQoNCgAEGwAAAEdFVCAvcmVzdC9kZWxldGVwbGF5ZXI/aWQ9AAQCAAAAcwAEBwAAAHN0YXR1cwAECAAAAHBhcnRpYWwABAgAAAByZWNlaXZlAAQDAAAAKmEABAYAAABjbG9zZQAAAAAAAQAAAAAAEAAAAEBvYmZ1c2NhdGVkLmx1YQA1AAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAAAUAAAAFAAAABQAAAAYAAAAGAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAgAAAAHAAAABQAAAAgAAAAJAAAACQAAAAkAAAAKAAAACgAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAAMAAAACwAAAAkAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAGAAAAAgAAAGEAAAAAADUAAAACAAAAYgAAAAAANQAAAAIAAABjAAAAAAA1AAAAAgAAAGQAAAAAADUAAAADAAAAX2EAAwAAADUAAAADAAAAYWEABwAAADUAAAABAAAABQAAAF9FTlYAAQAAAAEAEAAAAEBvYmZ1c2NhdGVkLmx1YQADAAAADAAAAAIAAAAMAAAAAAAAAAEAAAAFAAAAX0VOVgA="), nil, "bt", _ENV))()
