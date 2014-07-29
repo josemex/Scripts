@@ -3,8 +3,8 @@ if myHero.charName ~= "Udyr" then return end
 --Auto Download Required LIBS
 
 local REQUIRED_LIBS = {
-		["VPrediction"] = "https://raw.github.com/honda7/BoL/master/Common/VPrediction.lua",
-		["SOW"] = "https://raw.github.com/honda7/BoL/master/Common/SOW.lua",
+		["VPrediction"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/VPrediction.lua",
+		["SOW"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/SOW.lua",
 		["SourceLib"] = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua",
 		["Selector"] = "http://iuser99.com/scripts/Selector.lua",
 
