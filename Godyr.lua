@@ -76,6 +76,8 @@ JungleMobs = {}
 
 
 function OnLoad()
+	 ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 600 ,DAMAGE_PHYSICAL)
+   ts.name = "Udyr"
 	UpdateWeb(true, ScriptName, id, HWID)
    VP = VPrediction()
    SOWi = SOW(VP)
@@ -93,6 +95,7 @@ function OnUnload()
 end
 
 function OnTick()
+	ts:update()
 	if Config.VIP.skin and skinChanged() then
 		GenModelPacket("Udyr", Config.VIP.skin1)
 		lastSkin = Config.VIP.skin1
@@ -105,7 +108,7 @@ function OnTick()
 		if Config.ComboS.RunNStun then RunNStun() end
 		if Config.ComboS.StunCycle then StunCycle() end
 		--if Config.lane.laneclear then laneclear() end
-    if Config.ComboS.RunNStun then
+    if ts.target and Config.ComboS.RunNStun then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
     if Config.ComboS.Fight then Fight() end
@@ -152,10 +155,13 @@ function LoadMenu()
     Config:addSubMenu("Godyr - Skin Changer", "VIP")
 		Config.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
 		Config.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
+		
+    Config:addSubMenu("BioZed - Target Selector","TS")
+        Config.TS:addParam("TS","Target Selector",7,2,{ "AllClass", "Selector"})
 
     Config:addSubMenu("Godyr - Orbwalking", "Orbwalking")
         SOWi:LoadToMenu(Config.Orbwalking)
-       
+       Config:addTS(ts)
 end
 
 PrintChat("<font color=\"#FF0000\" >>> Godyr By Lucas v 1.1 <</font> ")
