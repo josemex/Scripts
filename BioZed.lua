@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.3 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.4 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
@@ -8,7 +8,7 @@ local VP
 local ts
 local lastSkin = 0
 local UltTargets = GetEnemyHeroes()
-local version = 2.3
+local version = 2.4
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
@@ -199,12 +199,10 @@ function LoadMenu()
     Config:addSubMenu("BioZed - Harass Settings", "harass")
     Config.harass:addParam("harassKey", "Harass Key (T)", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
     Config.harass:addParam("mode", "True = QWE, False = Q", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("V"))
-    Config.harass:permaShow("harassKey")
     Config.harass:permaShow("mode")
     
     Config:addSubMenu("BioZed - Ignite Settings", "lignite") 
     Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
-    Config.lignite:permaShow("igniteOptions")
     Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
     
     Config:addSubMenu("BioZed - Drawing Setting", "draw")
@@ -224,7 +222,6 @@ function LoadMenu()
     Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
     Config.lfarm:addParam("farmQ", "Farm With Q", SCRIPT_PARAM_ONOFF, true)
     Config.lfarm:addParam("FarmE", "Farm With E", SCRIPT_PARAM_ONOFF, true)
-    Config.lfarm:permaShow("farmKey")
 
     Config:addSubMenu("BioZed - Target Selector","TS")
         Config.TS:addParam("TS","Target Selector",7,2,{ "AllClass", "SourceLib", "Selector", "SAC:Reborn", "MMA" })
@@ -236,7 +233,6 @@ function LoadMenu()
     Config:addSubMenu("BioZed - Orbwalking", "Orbwalking")
     SOWi:LoadToMenu(Config.Orbwalking)
     
-    Config.ComboS:permaShow("Fight")
 end
 
 function autoIgnite()
@@ -420,7 +416,7 @@ function Harass()
     ts.range = 1500
     if ts.target then
         if Config.harass.mode then
-            if QREADY and WREADY and (GetDistance(ts.target, myHero) < 700) and (MyMana > QMana+WMana+EMana) then
+            if QREADY and WREADY and (GetDistance(ts.target, myHero) < 800) and (MyMana > QMana+WMana+EMana) then
                 if myHero:GetSpellData(_W).name ~= "zedw2" and GetTickCount() > lastW + 1000 then
                     CastSpell(_W, ts.target.x, ts.target.z)
                     if wUsed then CastSpell(_E) end
@@ -647,7 +643,6 @@ function Calculations()
         local enemy = EnemyTable[i].hero
         if ValidTarget(enemy) and enemy.visible then
             caaDmg = getDmg("AD",enemy,myHero)
-            cpDmg = getDmg("P", enemy, myHero)
             cqDmg = getDmg("Q", enemy, myHero)
             ceDmg = getDmg("E", enemy, myHero)
             ciDmg = getDmg("IGNITE", enemy, myHero)
@@ -669,7 +664,6 @@ function Calculations()
                 cItemDmg = cItemDmg + getDmg("TIAMAT", enemy, myHero)
             end
             
-            EnemyTable[i].p = cpDmg
             
             EnemyTable[i].q = cqDmg
             
@@ -723,7 +717,7 @@ function Calculations()
                 else
                     EnemyTable[i].NotReady = false
                 end
-                elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg then
+                elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + caaDmg then
                 EnemyTable[i].IndicatorText = "W+E+Q+AA Kill"
                 EnemyTable[i].IndicatorPos = 0
                 if QMana + WMana + EMana > MyMana or not QREADY or not WREADY or not EREADY then
@@ -731,7 +725,7 @@ function Calculations()
                 else
                 EnemyTable[i].NotReady = false
                 end
-            elseif (not RREADY) and enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + caaDmg + ciDmg + cItemDmg then
+            elseif (not RREADY) and enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + caaDmg + ciDmg + cItemDmg then
                 EnemyTable[i].IndicatorText = "Use Combo 2"
                 EnemyTable[i].IndicatorPos = 0
                 if (QMana + WMana + EMana > MyMana) or not QREADY or not WREADY or not EREADY then
@@ -739,7 +733,7 @@ function Calculations()
                 else
                     EnemyTable[i].NotReady = false
                 end 
-            elseif (not WREADY) and enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
+            elseif (not WREADY) and enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
                 EnemyTable[i].IndicatorText = "Kill Without W"
                 EnemyTable[i].IndicatorPos = 0
                 if QMana + EMana > MyMana or not QREADY or not EREADY or not RREADY then
@@ -747,7 +741,7 @@ function Calculations()
                 else
                     EnemyTable[i].NotReady = false
                 end
-            elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
+            elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
                 EnemyTable[i].IndicatorText = "Pff All in Kill"
                 EnemyTable[i].IndicatorPos = 0
                 if QMana + WMana + EMana + RMana > MyMana or not QREADY or not WREADY or not EREADY or not RREADY then
@@ -756,7 +750,7 @@ function Calculations()
                     EnemyTable[i].NotReady = false
                 end
             else
-                cTotal = cTotal + EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].p + EnemyTable[i].r + caaDmg
+                cTotal = cTotal + EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].r + caaDmg
                 
                 HealthLeft = math.round(enemy.health - cTotal)
                 PctLeft = math.round(HealthLeft / enemy.maxHealth * 100)
@@ -773,7 +767,6 @@ function Calculations()
         end 
     end
 end
-
 --CallBacks--
 
 function OnCreateObj(obj)
@@ -786,7 +779,7 @@ function OnCreateObj(obj)
     end
     if obj.valid and obj.name:find("Zed_Base_R_buf_tell.troy") then
         isDead = true
-        PrintChat("DEAD")
+        PrintFloatText(myHero,9,"Dead By Mark")
     end
 end
 
