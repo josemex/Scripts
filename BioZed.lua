@@ -103,7 +103,7 @@ function OnTick()
 end
     ts:update()
     tstarget = ts.target
-    if ValidTarget(tstarget) and tstarget.type == "obj_AI_Hero" then
+    if ValidTarget(tstarget) and tstarget.type == myHero.type then
         Target = tstarget
     else
         Target = nil
@@ -567,8 +567,8 @@ function OnDeleteObj(obj)
 end
 
 function Ignite()
-    if myHero:GetSpellData(SUMMONER_1).name:find("SummonerDot") then ignite = SUMMONER_1
-    elseif myHero:GetSpellData(SUMMONER_2).name:find("SummonerDot") then ignite = SUMMONER_2
+    if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then ignite = SUMMONER_1
+    elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then ignite = SUMMONER_2
     end
 end
 
