@@ -437,6 +437,7 @@ function Harass()
                     if myHero:GetSpellData(_W).name == "ZedShadowDash" then CastSpell(_W, DashPos.x, DashPos.z) end
                 end
                 if wClone and wClone.valid then
+                    CastE()
                     CastQClone()
                 end
                 
