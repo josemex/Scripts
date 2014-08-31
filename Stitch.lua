@@ -1,4 +1,7 @@
 if myHero.charName ~= "Fizz" then return end
+if VIP_USER then
+    PrintChat("<font color=\"#FF0000\" >> BioStitch By Lucas and AWA v 0.1 <</font> ")
+end
 --VERSION
 local VERSION = 1.2
 
