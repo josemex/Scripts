@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.4 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.5 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
@@ -448,6 +448,8 @@ function Harass()
             if not Config.harass.mode then
                 if QREADY and GetDistance(ts.target, myHero) < qRange then
                     CastQ()
+                    CastQClone()
+                    CastE()
                 end
             end
         end
