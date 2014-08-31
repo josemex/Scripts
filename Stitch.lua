@@ -1,6 +1,6 @@
 if myHero.charName ~= "Fizz" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioStitch By Lucas and AWA v 0.1 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> BioStitch By Lucas and AWA v 0.2 <</font> ")
 end
 --VERSION
 local VERSION = 1.2
@@ -506,89 +506,12 @@ if Menu.Misc.DodgeE then
 --Draw steal spots
 
 
- function GetStealPosition()
 
-local heroPosition = Point(myHero.x, myHero.z,myHero.y)
 
-local Xone5=5400
+ 
 
-local Yone5=10388
 
-if myHero.x~=5400 and myHero.z~=10388 then myHero:MoveTo(Xone5, Yone5) end
 
-end
-
- function GetStealPosition2()
-
-local heroPosition = Point(myHero.x, myHero.z,myHero.y)
-
-local Xone3=8645
-
-local Yone3=4515
-
-if myHero.x~=8645 and myHero.z~=4515 then
-myHero:MoveTo(Xone3, Yone3)
-
-end
-
-end
-
-function BaronSteal()
-
-local heroPosition = Point(myHero.x, myHero.z,myHero.y)
-
-local Xone5=5400
-
-local Yone5=10388
-
-local Xone6=5103
-
-local Yone6=10402
-
-local Ename=E:GetName()
-
-if  E:IsReady()  and
-
-Ename == "FizzJump"  then
-
-CastSpell(_E,Xone6,Yone6)
-
-end
-if  E:IsReady() and Ename == "fizzjumptwo"  then
-
-CastSpell(_E,Xone5,Yone5)
-
-end
-
-end
-
-function DrakeSteal()
-
-local heroPosition = Point(myHero.x, myHero.z,myHero.y)
-
-local Xone3=8645
-
-local Yone3=4515
-
-local Xone4=8971
-
-local Yone4=4447
-
-local Ename=E:GetName()
-
-if  E:IsReady()  and Ename == "FizzJump"  then
-
-CastSpell(_E,Xone4,Yone4)
-
-end
-
-if  E:IsReady() and Ename == "fizzjumptwo"  then
-
-CastSpell(_E,Xone3,Yone3)
-
-end
-
-end
 
 function GenModelPacket(champ, skinId)
 	p = CLoLPacket(0x97)
