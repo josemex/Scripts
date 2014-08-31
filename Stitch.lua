@@ -501,37 +501,7 @@ if Menu.Misc.DodgeE then
 --End Dodge E
 
 --Draw steal spots
-function OnDraw()
 
-if Menu.Jungle.DrawSpots then
-
-local Xone3=8645
-
-local Yone3=4515
-
-local Xone4=8971
-
-local Yone4=4447
-
-local Xone5=5400
-
-local Yone5=10388
-
-local Xone6=5103
-
-local Yone6=10402
-
-DrawCircle(Xone3, 0, Yone3, 75, 0x0000ff)
-
-DrawCircle(Xone4, 0, Yone4, 75, 0x0000ff)
-
-DrawCircle(Xone5, 0, Yone5, 75, 0x0000ff)
-
-DrawCircle(Xone6, 0, Yone6, 75, 0x0000ff)
-
-end
-
-end
 
  function GetStealPosition()
 
