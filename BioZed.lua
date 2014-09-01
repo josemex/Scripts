@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.5 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.6 <</font> ")
 end
 
 local RREADY, QREADY, WREADY, EREADY
@@ -8,7 +8,7 @@ local VP
 local ts
 local lastSkin = 0
 local UltTargets = GetEnemyHeroes()
-local version = 2.4
+local version = 2.6
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
@@ -425,7 +425,7 @@ function Harass()
             if wUsed then
                 CastQ()
             end
-            if not WREADY then 
+            if not WREADY then
                 CastQ()
                 CastQClone()
             end
@@ -437,24 +437,26 @@ function Harass()
                     if myHero:GetSpellData(_W).name == "ZedShadowDash" then CastSpell(_W, DashPos.x, DashPos.z) end
                 end
                 if wClone and wClone.valid then
-                    CastE()
                     CastQClone()
                 end
-                
+               
             end
-            
+           
         else
-            
-            
+           
+           
             if not Config.harass.mode then
                 if QREADY and GetDistance(ts.target, myHero) < qRange then
                     CastQ()
-                    CastQClone()
-                    CastE()
+                                elseif EReady and GetDistance(ts.target, myHero) < eRange then
+                                        CastE()
+                                elseif wClone and wClone.valid then
+                                        CastE()
+                                        CastQClone()
                 end
             end
         end
-        
+       
     end
 end
 
@@ -462,7 +464,7 @@ function CastQ()
 if Config.SSettings.Vpred then
      if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
-        if HitChance >= 1 then
+        if HitChance >= 2 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
         end
     end
@@ -481,7 +483,7 @@ function CastQClone()
     if Config.SSettings.Vpred then
     if ValidTarget(ts.target) and GetDistance(ts.target, wClone) < qRange then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, wClone, false)
-        if HitChance >= 1 then
+        if HitChance >= 2 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
         end
     end
