@@ -1,6 +1,6 @@
 if myHero.charName ~= "Fizz" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioStitch By Lucas and AWA v 0.2 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> BioStitch By Lucas and AWA v 0.3 <</font> ")
 end
 
 --AUTO LIBS DOWNLOADER
@@ -121,6 +121,7 @@ R:SetSkillshot(VP, SKILLSHOT_LINEAR, Widths[_R], Delays[_R], Speeds[_R], false)
 E:SetSkillshot(VP, SKILLSHOT_CIRCULAR, Widths[_E], Delays[_E], Speeds[_E], false)
 
 E:SetHitChance(1)
+R:SetHitChance(2)
 --End VPred settings
 
 
