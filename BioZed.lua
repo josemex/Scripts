@@ -776,6 +776,8 @@ function OnCreateObj(obj)
     if obj.valid and obj.name:find("Zed_Base_R_buf_tell.troy") then
         isDead = true
         PrintFloatText(myHero,9,"Dead By Mark")
+        PrintAlert("TARGET DEAD!!!", 4, 255, 0, 0)
+        PrintAlert("TARGET DEAD!!!", 4, 255, 0, 0)
     end
 end
  
