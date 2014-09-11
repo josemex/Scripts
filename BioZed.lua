@@ -1,6 +1,6 @@
 if myHero.charName ~= "Zed" then return end
 if VIP_USER then
-    PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 2.71 <</font> ")
+    PrintChat("<font color=\"#FF0000\" >> Authentication Failed ! <</font> ")
 end
  
 local RREADY, QREADY, WREADY, EREADY
@@ -8,10 +8,11 @@ local VP
 local ts
 local lastSkin = 0
 local UltTargets = GetEnemyHeroes()
-local version = 2.71
+local version = 3
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
+local Ranges = {[_Q] = 900, [_W] = 550, [_E] = 290}
 local Zed = {
         Q = {range = 900, speed = 902, delay = 0.25},
 }
@@ -58,7 +59,14 @@ require "Prodiction"
  
  
 function OnLoad()
-   
+
+    Q = Spell(_Q, Ranges[_Q])
+    --W
+    W = Spell(_W, Ranges[_W])
+    --E
+    E = Spell(_E, Ranges[_E])
+    --R
+    DManager = DrawManager()
     UpdateWeb(true, ScriptName, id, HWID)
     ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 900 ,DAMAGE_PHYSICAL)
     ts.name = "AllClass TS"
@@ -68,8 +76,6 @@ function OnLoad()
     SOWi = SOW(VP)
     LoadVariables()
     Selector.Instance()
-    TS = SimpleTS(STS_LESS_CAST_MAGIC)
-    STS = SimpleTS(STS_PRIORITY_LESS_CAST_MAGIC)
     LoadMenu()
     Ignite()
     for i=1, heroManager.iCount do
@@ -92,9 +98,9 @@ end
  
 function OnTick()
  
-        if Config.VIP.skin and skinChanged() then
-                GenModelPacket("Zed", Config.VIP.skin1)
-                lastSkin = Config.VIP.skin1
+        if Config.lmisc.VIP.skin and skinChanged() then
+                GenModelPacket("Zed", Config.lmisc.VIP.skin1)
+                lastSkin = Config.lmisc.VIP.skin1
         end
     if GetGame().isOver then
         UpdateWeb(false, ScriptName, id, HWID)
@@ -201,23 +207,26 @@ function LoadMenu()
     Config.harass:addParam("mode", "True = QWE, False = Q", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("V"))
     Config.harass:permaShow("mode")
    
-    Config:addSubMenu("BioZed - Ignite Settings", "lignite")
-    Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
-    Config.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
+    Config:addSubMenu("BioZed - Misc Settings", "lmisc")
+        Config.lmisc:addSubMenu("BioZed - Ignite Settings", "lignite")
+            Config.lmisc.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Burst"})
+            Config.lmisc.lignite:addParam("autoIgnite", "Ks Ignite", SCRIPT_PARAM_ONOFF, true)
+
+        Config.lmisc:addSubMenu("BioZed - Prediction","SSettings")
+            Config.lmisc.SSettings:addParam("Vpred", "Use Vprediction", SCRIPT_PARAM_ONOFF, true)
+            Config.lmisc.SSettings:addParam("Prod", "Use Prodiction", SCRIPT_PARAM_ONOFF, false)
+
+        Config.lmisc:addSubMenu("BioZed - Skin Changer", "VIP")
+            Config.lmisc.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
+            Config.lmisc.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
+   
    
     Config:addSubMenu("BioZed - Drawing Setting", "draw")
-    Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
-    Config.draw:addParam("Edraw", "Draw E", SCRIPT_PARAM_ONOFF, true)
-    Config.draw:addParam("Qdraw", "Draw Q", SCRIPT_PARAM_ONOFF, true)
+        Config.draw:addParam("DmgIndic","Kill text", SCRIPT_PARAM_ONOFF, true)
+            for spell, range in pairs(Ranges) do
+        DManager:CreateCircle(myHero, range, 1, {255, 255, 255, 255}):AddToMenu(Config.draw, SpellToString(spell).." Range", true, true, true)
+    end
    
-    Config:addSubMenu("BioZed - Prediction","SSettings")
-    Config.SSettings:addParam("Vpred", "Use Vprediction", SCRIPT_PARAM_ONOFF, true)
-    Config.SSettings:addParam("Prod", "Use Prodiction(VIP ONLY)", SCRIPT_PARAM_ONOFF, false)
- 
-  Config:addSubMenu("BioZed - Skin Changer", "VIP")
-        Config.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
-        Config.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
- 
     Config:addSubMenu("BioZed - Farm", "lfarm")
     Config.lfarm:addParam("farmKey", "Farm", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X"))
     Config.lfarm:addParam("farmQ", "Farm With Q", SCRIPT_PARAM_ONOFF, true)
@@ -231,9 +240,12 @@ function LoadMenu()
     SOWi:LoadToMenu(Config.Orbwalking)
    
 end
+PrintChat("<font color=\"#FF0000\" >> JOKE ! <</font> ")
+PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 3.0 <</font> ")
+PrintChat("<font color=\"#FF0000\" >> Enjoy ! <</font> ")
  
 function autoIgnite()
-    if Config.lignite.autoIgnite then
+    if Config.lmisc.lignite.autoIgnite then
         if iReady then
             local ignitedmg = 0
             for i = 1, heroManager.iCount, 1 do
@@ -302,6 +314,7 @@ if Config.ComboS.wSwap then Swap() end
                         if (not WREADY or wClone ~= nil or Config.ComboS.NoWWhenUlt or wUsed) and (not RREADY or rClone ~= nil) then
                             if EREADY then
                                 CastE()
+
                             end
                             if QREADY and GetDistance(ts.target, myHero) < qRange and (myHero:CanUseSpell(_R) == COOLDOWN or myHero:CanUseSpell(_R) == NOTLEARNED or (rClone and rClone.valid)) then
                                 CastQ()
@@ -311,7 +324,7 @@ if Config.ComboS.wSwap then Swap() end
                 end
                
                
-                if Config.lignite.igniteOptions == 2 and TargetHaveBuff("zedulttargetmark", ts.target) then
+                if Config.lmisc.lignite.igniteOptions == 2 and TargetHaveBuff("zedulttargetmark", ts.target) then
                     if iReady then
                         if GetDistance(ts.target) <= 600 then
                             CastSpell(ignite, ts.target)
@@ -383,7 +396,7 @@ function Fight2()
                 end
             end
         end
-                if Config.lignite.igniteOptions == 2 and TargetHaveBuff("zedulttargetmark", ts.target) then
+                if Config.lmisc.lignite.igniteOptions == 2 and TargetHaveBuff("zedulttargetmark", ts.target) then
                     if iReady then
                         if GetDistance(ts.target) <= 600 then
                             CastSpell(ignite, ts.target)
@@ -404,7 +417,7 @@ function Fight2()
        
         if myHero:GetSpellData(_R).name == "ZedR2" and ((myHero.health / myHero.maxHealth * 100) <= Config.ComboS.SwapUlt) then
                 CastSpell(_R)
-            end
+        end
         end
        
     end
@@ -458,14 +471,14 @@ function Harass()
 end
  
 function CastQ()
-if Config.SSettings.Vpred then
+if Config.lmisc.SSettings.Vpred then
      if ValidTarget(ts.target) and (GetDistance(ts.target, myHero) < qRange or GetDistance(ts.target, wClone) < qRange or GetDistance(ts.target, rClone) < qRange) then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, myHero, false)
         if HitChance >= 2 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
         end
     end
-    else if Config.SSettings.Prod then
+    else if Config.lmisc.SSettings.Prod then
     if QREADY and ValidTarget(ts.target) and not ts.target.dead and ts.target.visible then
         local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth)
         if pos and pos.x and pos.z and info and info.hitchance >= 1 and GetDistance(pos) < Qrange then
@@ -477,14 +490,14 @@ end
 end
  
 function CastQClone()
-    if Config.SSettings.Vpred then
+    if Config.lmisc.SSettings.Vpred then
     if ValidTarget(ts.target) and GetDistance(ts.target, wClone) < qRange then
      local CastPosition,  HitChance,  Position = VP:GetLineCastPosition(ts.target, 0.25, 50, 925, 1700, wClone, false)
         if HitChance >= 2 then
             CastSpell(_Q, CastPosition.x, CastPosition.z)    
         end
     end
-    else if Config.SSettings.Prod then
+    else if Config.lmisc.SSettings.Prod then
         if QREADY and ValidTarget(ts.target) and not ts.target.dead and ts.target.visible then
         local clone = Vector(wClone)
         local pos, info = Prodiction.GetPrediction(ts.target, Qrange, Qspeed, Qdelay, Qwidth, clone, false)
@@ -503,7 +516,7 @@ function CastE()
         CastSpell(_E, myHero)
     end
 end
- 
+
  
 function CastR()
     if not RREADY then return end
@@ -616,7 +629,7 @@ function GrabTarget()
             return ts.target
         end
     end
-		
+        
 function MaxRange()
         if QREADY then
             return Zed.Q["range"]
@@ -722,25 +735,9 @@ function Calculations()
                 EnemyTable[i].NotReady = false
                 end
             elseif (not RREADY) and enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + caaDmg + ciDmg + cItemDmg then
-                EnemyTable[i].IndicatorText = "Use Combo 2"
+                EnemyTable[i].IndicatorText = "Use Combo"
                 EnemyTable[i].IndicatorPos = 0
                 if (QMana + WMana + EMana > MyMana) or not QREADY or not WREADY or not EREADY then
-                    EnemyTable[i].NotReady = true
-                else
-                    EnemyTable[i].NotReady = false
-                end
-            elseif (not WREADY) and enemy.health < EnemyTable[i].q + EnemyTable[i].e + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
-                EnemyTable[i].IndicatorText = "Kill Without W"
-                EnemyTable[i].IndicatorPos = 0
-                if QMana + EMana > MyMana or not QREADY or not EREADY or not RREADY then
-                    EnemyTable[i].NotReady = true
-                else
-                    EnemyTable[i].NotReady = false
-                end
-            elseif enemy.health < EnemyTable[i].q2 + EnemyTable[i].e + EnemyTable[i].r + caaDmg + ciDmg + cItemDmg then
-                EnemyTable[i].IndicatorText = "Pff All in Kill"
-                EnemyTable[i].IndicatorPos = 0
-                if QMana + WMana + EMana + RMana > MyMana or not QREADY or not WREADY or not EREADY or not RREADY then
                     EnemyTable[i].NotReady = true
                 else
                     EnemyTable[i].NotReady = false
@@ -778,6 +775,7 @@ function OnCreateObj(obj)
         PrintFloatText(myHero,9,"Dead By Mark")
         PrintAlert("TARGET DEAD!!!", 4, 255, 0, 0)
         PrintAlert("TARGET DEAD!!!", 4, 255, 0, 0)
+        PrintAlert("TARGET DEAD!!!", 4, 255, 0, 0)
     end
 end
  
@@ -810,47 +808,9 @@ function OnAnimation(unit, animationName)
     if unit.isMe and lastAnimation ~= animationName then lastAnimation = animationName end
 end
  
---Lagfree Circles by barasia, vadash and viseversa
-function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
-    radius = radius or 300
-    quality = math.max(8,round(180/math.deg((math.asin((chordlength/(2*radius)))))))
-    quality = 2 * math.pi / quality
-    radius = radius*.92
-    local points = {}
-    for theta = 0, 2 * math.pi + quality, quality do
-        local c = WorldToScreen(D3DXVECTOR3(x + radius * math.cos(theta), y, z - radius * math.sin(theta)))
-        points[#points + 1] = D3DXVECTOR2(c.x, c.y)
-    end
-    DrawLines2(points, width or 1, color or 4294967295)
-end
+
  
-function round(num)
-    if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
-end
- 
-function DrawCircle2(x, y, z, radius, color)
-    local vPos1 = Vector(x, y, z)
-    local vPos2 = Vector(cameraPos.x, cameraPos.y, cameraPos.z)
-    local tPos = vPos1 - (vPos1 - vPos2):normalized() * radius
-    local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
-    if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
-        DrawCircleNextLvl(x, y, z, radius, 1, color, 75)
-    end
-end
- 
- 
-function OnDraw()
-    if Config.draw.Qdraw then
-       
-        DrawCircle(myHero.x, myHero.y, myHero.z, 900, ARGB(255,255,0,0))
-       
-    end
-    if Config.draw.Edraw then
-        DrawCircle(myHero.x, myHero.y, myHero.z, 290, ARGB(255,255,0,0))
-       
-    end
-   
-   
+function OnDraw() 
     if Config.draw.DmgIndic then
         for i=1, EnemysInTable, 1 do
             local enemy = EnemyTable[i].hero
@@ -912,7 +872,7 @@ function GenModelPacket(champ, skinId)
 end
  
 function skinChanged()
-        return Config.VIP.skin1 ~= lastSkin
+        return Config.lmisc.VIP.skin1 ~= lastSkin
 end
  
 function OnBugsplat()
