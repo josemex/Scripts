@@ -8,7 +8,7 @@ local VP
 local ts
 local lastSkin = 0
 local UltTargets = GetEnemyHeroes()
-local version = 3
+local version = 3.1
 local scriptName = "BioZed"
 local Qrange, Qwidth, Qspeed, Qdelay = 900, 45, 902, 0.25
 local QReady, WReady, EReady, RReady = false, false, false, false
@@ -29,7 +29,6 @@ local REQUIRED_LIBS = {
     ["VPrediction"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/VPrediction.lua",
     ["SOW"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/SOW.lua",
     ["SourceLib"] = "https://raw.githubusercontent.com/TheRealSource/public/master/common/SourceLib.lua",
-    ["Selector"] = "http://iuser99.com/scripts/Selector.lua",
 }
 local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
 local SELF_NAME = GetCurrentEnv() and GetCurrentEnv().FILE_NAME or ""
@@ -67,15 +66,11 @@ function OnLoad()
     E = Spell(_E, Ranges[_E])
     --R
     DManager = DrawManager()
-    UpdateWeb(true, ScriptName, id, HWID)
     ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 900 ,DAMAGE_PHYSICAL)
     ts.name = "AllClass TS"
-    if VIP_USER then
-        VP = VPrediction()
-    end
+    VP = VPrediction()
     SOWi = SOW(VP)
     LoadVariables()
-    Selector.Instance()
     LoadMenu()
     Ignite()
     for i=1, heroManager.iCount do
@@ -102,11 +97,6 @@ function OnTick()
                 GenModelPacket("Zed", Config.lmisc.VIP.skin1)
                 lastSkin = Config.lmisc.VIP.skin1
         end
-    if GetGame().isOver then
-        UpdateWeb(false, ScriptName, id, HWID)
-        -- This is a var where I stop executing what is in my OnTick()
-        startUp = false;
-end
     ts:update()
     tstarget = ts.target
     if ValidTarget(tstarget) and tstarget.type == myHero.type then
@@ -126,7 +116,6 @@ end
             end
         end
     end
-    SetCooldowns()
     if Config.ComboS.Fight then Fight() end
     if Config.ComboS2.Fight2 then Fight2() end
     if Config.lfarm.farmKey then
@@ -148,7 +137,6 @@ end
  
 function OnUnload()
     PrintFloatText(myHero,9,"U NO RAPE ?! :,( ")
-    UpdateWeb(false, ScriptName, id, HWID)
 end
  
 function LoadVariables()
@@ -183,6 +171,32 @@ function LoadVariables()
     EMana = nil
     RMana = nil
     MyMana = nil
+		priorityTable = {
+			AP = {
+				"Annie", "Ahri", "Akali", "Anivia", "Annie", "Brand", "Cassiopeia", "Diana", "Evelynn", "FiddleSticks", "Fizz", "Gragas", "Heimerdinger", "Karthus",
+				"Kassadin", "Katarina", "Kayle", "Kennen", "Leblanc", "Lissandra", "Lux", "Malzahar", "Mordekaiser", "Morgana", "Nidalee", "Orianna",
+				"Ryze", "Sion", "Swain", "Syndra", "Teemo", "TwistedFate", "Veigar", "Viktor", "Vladimir", "Xerath", "Ziggs", "Zyra", "Velkoz"
+			},
+			
+			Support = {
+				"Alistar", "Blitzcrank", "Janna", "Karma", "Leona", "Lulu", "Nami", "Nunu", "Sona", "Soraka", "Taric", "Thresh", "Zilean", "Braum"
+			},
+			
+			Tank = {
+				"Amumu", "Chogath", "DrMundo", "Galio", "Hecarim", "Malphite", "Maokai", "Nasus", "Rammus", "Sejuani", "Nautilus", "Shen", "Singed", "Skarner", "Volibear",
+				"Warwick", "Yorick", "Zac"
+			},
+			
+			AD_Carry = {
+				"Ashe", "Caitlyn", "Corki", "Draven", "Ezreal", "Graves", "Jayce", "Jinx", "KogMaw", "Lucian", "MasterYi", "MissFortune", "Pantheon", "Quinn", "Shaco", "Sivir",
+				"Talon","Tryndamere", "Tristana", "Twitch", "Urgot", "Varus", "Vayne", "Yasuo", "Zed"
+			},
+			
+			Bruiser = {
+				"Aatrox", "Darius", "Elise", "Fiora", "Gangplank", "Garen", "Irelia", "JarvanIV", "Jax", "Khazix", "LeeSin", "Nocturne", "Olaf", "Poppy",
+				"Renekton", "Rengar", "Riven", "Rumble", "Shyvana", "Trundle", "Udyr", "Vi", "MonkeyKing", "XinZhao"
+			}
+	}
 end
  
 function LoadMenu()
@@ -233,7 +247,6 @@ function LoadMenu()
     Config.lfarm:addParam("FarmE", "Farm With E", SCRIPT_PARAM_ONOFF, true)
  
     Config:addSubMenu("BioZed - Target Selector","TS")
-        Config.TS:addParam("TS","Target Selector",7,2,{ "AllClass", "Selector"})
     Config.TS:addTS(ts)
                
     Config:addSubMenu("BioZed - Orbwalking", "Orbwalking")
@@ -241,7 +254,7 @@ function LoadMenu()
    
 end
 PrintChat("<font color=\"#FF0000\" >> JOKE ! <</font> ")
-PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 3.0 <</font> ")
+PrintChat("<font color=\"#FF0000\" >> BioZed By Lucas v 3.1 <</font> ")
 PrintChat("<font color=\"#FF0000\" >> Enjoy ! <</font> ")
  
 function autoIgnite()
@@ -587,13 +600,6 @@ function Ignite()
     end
 end
  
-function SetCooldowns()
-    QREADY = (myHero:CanUseSpell(_Q) == READY)
-    WREADY = (myHero:CanUseSpell(_W) == READY)
-    EREADY = (myHero:CanUseSpell(_E) == READY)
-    RREADY = (myHero:CanUseSpell(_R) == READY)
-    iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
-end
  
 function CastItems(target)
     if not ValidTarget(target) then
@@ -638,15 +644,6 @@ function MaxRange()
     end
  
 function Calculations()
-    QREADY = (myHero:CanUseSpell(_Q) == READY)
-    WREADY = (myHero:CanUseSpell(_W) == READY)
-    EREADY = (myHero:CanUseSpell(_E) == READY)
-    RREADY = (myHero:CanUseSpell(_R) == READY)
-    QMana = myHero:GetSpellData(_Q).mana
-    WMana = myHero:GetSpellData(_W).mana
-    EMana = myHero:GetSpellData(_E).mana
-    RMana = myHero:GetSpellData(_R).mana
-    MyMana = myHero.mana
     for i=1, EnemysInTable do
        
         local enemy = EnemyTable[i].hero
@@ -775,7 +772,6 @@ function OnCreateObj(obj)
         PrintFloatText(myHero,9,"Dead By Mark")
         PrintAlert("TARGET DEAD!!!", 4, 255, 0, 0)
         PrintAlert("TARGET DEAD!!!", 4, 255, 0, 0)
-        PrintAlert("TARGET DEAD!!!", 4, 255, 0, 0)
     end
 end
  
@@ -875,15 +871,40 @@ function skinChanged()
         return Config.lmisc.VIP.skin1 ~= lastSkin
 end
  
-function OnBugsplat()
-        UpdateWeb(false, ScriptName, id, HWID)
+ function SetPriority(table, hero, priority)
+	for i=1, #table, 1 do
+		if hero.charName:find(table[i]) ~= nil then
+			TS_SetHeroPriority(priority, hero.charName)
+		end
+	end
 end
  
--- These variables need to be near the top of your script so you can call them in your callbacks.
-HWID = Base64Encode(tostring(os.getenv("PROCESSOR_IDENTIFIER")..os.getenv("USERNAME")..os.getenv("COMPUTERNAME")..os.getenv("PROCESSOR_LEVEL")..os.getenv("PROCESSOR_REVISION")))
--- DO NOT CHANGE. This is set to your proper ID.
-id = 53
-ScriptName = "BioZed"
- 
--- Thank you to Roach and Bilbao for the support!
-assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQIDAAAAJQAAAAgAAIAfAIAAAQAAAAQKAAAAVXBkYXRlV2ViAAEAAAACAAAADAAAAAQAETUAAAAGAUAAQUEAAB2BAAFGgUAAh8FAAp0BgABdgQAAjAHBAgFCAQBBggEAnUEAAhsAAAAXwAOAjMHBAgECAgBAAgABgUICAMACgAEBgwIARsNCAEcDwwaAA4AAwUMDAAGEAwBdgwACgcMDABaCAwSdQYABF4ADgIzBwQIBAgQAQAIAAYFCAgDAAoABAYMCAEbDQgBHA8MGgAOAAMFDAwABhAMAXYMAAoHDAwAWggMEnUGAAYwBxQIBQgUAnQGBAQgAgokIwAGJCICBiIyBxQKdQQABHwCAABcAAAAECAAAAHJlcXVpcmUABAcAAABzb2NrZXQABAcAAABhc3NlcnQABAQAAAB0Y3AABAgAAABjb25uZWN0AAQQAAAAYm9sLXRyYWNrZXIuY29tAAMAAAAAAABUQAQFAAAAc2VuZAAEGAAAAEdFVCAvcmVzdC9uZXdwbGF5ZXI/aWQ9AAQHAAAAJmh3aWQ9AAQNAAAAJnNjcmlwdE5hbWU9AAQHAAAAc3RyaW5nAAQFAAAAZ3N1YgAEDQAAAFteMC05QS1aYS16XQAEAQAAAAAEJQAAACBIVFRQLzEuMA0KSG9zdDogYm9sLXRyYWNrZXIuY29tDQoNCgAEGwAAAEdFVCAvcmVzdC9kZWxldGVwbGF5ZXI/aWQ9AAQCAAAAcwAEBwAAAHN0YXR1cwAECAAAAHBhcnRpYWwABAgAAAByZWNlaXZlAAQDAAAAKmEABAYAAABjbG9zZQAAAAAAAQAAAAAAEAAAAEBvYmZ1c2NhdGVkLmx1YQA1AAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAAAUAAAAFAAAABQAAAAYAAAAGAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAgAAAAHAAAABQAAAAgAAAAJAAAACQAAAAkAAAAKAAAACgAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAAMAAAACwAAAAkAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAGAAAAAgAAAGEAAAAAADUAAAACAAAAYgAAAAAANQAAAAIAAABjAAAAAAA1AAAAAgAAAGQAAAAAADUAAAADAAAAX2EAAwAAADUAAAADAAAAYWEABwAAADUAAAABAAAABQAAAF9FTlYAAQAAAAEAEAAAAEBvYmZ1c2NhdGVkLmx1YQADAAAADAAAAAIAAAAMAAAAAAAAAAEAAAAFAAAAX0VOVgA="), nil, "bt", _ENV))()
+function arrangePrioritys()
+		for i, enemy in ipairs(GetEnemyHeroes()) do
+		SetPriority(priorityTable.AD_Carry, enemy, 1)
+		SetPriority(priorityTable.AP,	   enemy, 2)
+		SetPriority(priorityTable.Support,  enemy, 3)
+		SetPriority(priorityTable.Bruiser,  enemy, 4)
+		SetPriority(priorityTable.Tank,	 enemy, 5)
+		end
+end
+
+function arrangePrioritysTT()
+        for i, enemy in ipairs(GetEnemyHeroes()) do
+		SetPriority(priorityTable.AD_Carry, enemy, 1)
+		SetPriority(priorityTable.AP,       enemy, 1)
+		SetPriority(priorityTable.Support,  enemy, 2)
+		SetPriority(priorityTable.Bruiser,  enemy, 2)
+		SetPriority(priorityTable.Tank,     enemy, 3)
+        end
+end
+
+function PriorityOnLoad()
+	if heroManager.iCount < 10 or (TwistedTreeline and heroManager.iCount < 6) then
+		print("<b><font color=\"#6699FF\">BioZed:</font></b> <font color=\"#FFFFFF\">Too few champions to arrange priority.</font>")
+	elseif heroManager.iCount == 6 then
+		arrangePrioritysTT()
+    else
+		arrangePrioritys()
+	end
+end
