@@ -3,10 +3,9 @@ if myHero.charName ~= "Udyr" then return end
 --Auto Download Required LIBS
 
 local REQUIRED_LIBS = {
-		["VPrediction"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/VPrediction.lua",
-		["SOW"] = "https://raw.githubusercontent.com/Hellsing/BoL/master/common/SOW.lua",
+		["VPrediction"] = "https://raw.github.com/honda7/BoL/master/Common/VPrediction.lua",
+		["SOW"] = "https://raw.github.com/honda7/BoL/master/Common/SOW.lua",
 		["SourceLib"] = "https://raw.github.com/TheRealSource/public/master/common/SourceLib.lua",
-		["Selector"] = "http://iuser99.com/scripts/Selector.lua",
 
 }
 
@@ -33,7 +32,7 @@ end
 
 if DOWNLOADING_LIBS then return end
 --End auto downloading LIBS
-local version = 1.1
+local version = 1.0
 local scriptName = "Godyr"
 
 -- Change autoUpdate to false if you wish to not receive auto updates.
@@ -41,6 +40,9 @@ local scriptName = "Godyr"
 local autoUpdate   = true
 local silentUpdate = false
 
+if autoUpdate then
+    SourceUpdater(scriptName, version, "raw.github.com", "/LucasRPC/Scripts/master/Godyr.lua", SCRIPT_PATH .. GetCurrentEnv().FILE_NAME):SetSilent(silentUpdate):CheckUpdate()
+end
 
 
 require "VPrediction"
@@ -53,7 +55,6 @@ local levelSequence2 = {1,2,3,1,1,3,1,3,1,3,3,2,2,2,2,4,4,4}
 local ignite = nil
 local stunTarget = nil
 local lastCast = "none"
-local lastSkin = 0
 local AAcount = 0
 local lastNameTarget = myHero.name
 local UdyrConfig, ts
@@ -76,39 +77,29 @@ JungleMobs = {}
 
 
 function OnLoad()
-	 ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 600 ,DAMAGE_PHYSICAL)
+   ts = TargetSelector(TARGET_LOW_HP_PRIORITY, 600 ,DAMAGE_PHYSICAL)
    ts.name = "Udyr"
-	UpdateWeb(true, ScriptName, id, HWID)
    VP = VPrediction()
    SOWi = SOW(VP)
    LoadMenu()
    JungleNames()
-   Selector.Instance()
-	Tick = GetTickCount()
+	 Tick = GetTickCount()
    Ignite()
-	JMinions = minionManager(MINION_JUNGLE, qRange, myHero)
+	 JMinions = minionManager(MINION_JUNGLE, qRange, myHero)
    PrintFloatText(myHero, 11, "LETS DISRESPECT!")
 end
 
-function OnUnload()
-	UpdateWeb(false, ScriptName, id, HWID)
-end
-
 function OnTick()
-	ts:update()
-	if Config.VIP.skin and skinChanged() then
-		GenModelPacket("Udyr", Config.VIP.skin1)
-		lastSkin = Config.VIP.skin1
-	end
     JMinions:update()
     GlobalInfos()
+    ts:update()
     if Config.misc.spame then
     	CastSpell(_E)
     end
 		if Config.ComboS.RunNStun then RunNStun() end
 		if Config.ComboS.StunCycle then StunCycle() end
 		--if Config.lane.laneclear then laneclear() end
-    if ts.target and Config.ComboS.RunNStun then
+    if ts.target == nil and Config.ComboS.RunNStun then
                 myHero:MoveTo(mousePos.x, mousePos.z)
         end
     if Config.ComboS.Fight then Fight() end
@@ -142,29 +133,30 @@ function LoadMenu()
 		Config.jungle:addParam("W", "Clear with (W)", 1,true)
 		Config.jungle:addParam("E", "Clear with (E)", 1,true)
 		Config.jungle:addParam("R", "Clear with (R)", 1,true)
+
+	--Config:addSubMenu("Godyr - Lane Clear", "lane")
+        --Config.lane:addParam("laneclear", "Clear Lane", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))
+        --Config.lane:addParam("AA","Auto Attack in 'Lane'",1,true)
+        --Config.lane:addParam("Q", "Clear with (Q)", 1,true)
+		--Config.lane:addParam("W", "Clear with (W)", 1,true)
+		--Config.lane:addParam("E", "Clear with (E)", 1,true)
+		--Config.lane:addParam("R", "Clear with (R)", 1,true)
    
     Config:addSubMenu("Godyr - Ignite Settings", "lignite")    
         Config.lignite:addParam("igniteOptions", "Ignite Options", SCRIPT_PARAM_LIST, 2, { "Don't use", "Kill Steal"})
 
     Config:addSubMenu("Godyr - Misc Settings", "misc")
         Config.misc:addParam("autoPotions", "Use potions when HP < %", SCRIPT_PARAM_SLICE, 15, 2, 100, 0)
-		Config.misc:addParam("autoLevel", "Auto Level", SCRIPT_PARAM_LIST, 1, { "Don't use", "Godyr", "Tigerdyr"})
-		Config.misc:addParam("draw", "Draw Range", SCRIPT_PARAM_ONOFF, false)
-		Config.misc:addParam("spame", "Marathon Mode", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("M"))
-
-    Config:addSubMenu("Godyr - Skin Changer", "VIP")
-		Config.VIP:addParam("skin", "Use custom skin", SCRIPT_PARAM_ONOFF, false)
-		Config.VIP:addParam("skin1", "Skin changer", SCRIPT_PARAM_SLICE, 1, 1, 7)
-		
-    Config:addSubMenu("BioZed - Target Selector","TS")
-        Config.TS:addParam("TS","Target Selector",7,2,{ "AllClass", "Selector"})
+	Config.misc:addParam("autoLevel", "Auto Level", SCRIPT_PARAM_LIST, 1, { "Don't use", "Godyr", "Tigerdyr"})
+	Config.misc:addParam("draw", "Draw Range", SCRIPT_PARAM_ONOFF, false)
+	Config.misc:addParam("spame", "Marathon Mode", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte("M"))
 
     Config:addSubMenu("Godyr - Orbwalking", "Orbwalking")
         SOWi:LoadToMenu(Config.Orbwalking)
-       Config:addTS(ts)
+    Config:addTS(ts)
 end
 
-PrintChat("<font color=\"#FF0000\" >>> Godyr By Lucas v 1.1 <</font> ")
+PrintChat("<font color=\"#FF0000\" >>> Godyr By Lucas v 1 <</font> ")
 
 function autoPotions()
 	if Config.misc.autoPotions then
@@ -544,44 +536,3 @@ function RunNStun()
 		end
 	end
 end
-
-function GenModelPacket(champ, skinId)
-	p = CLoLPacket(0x97)
-	p:EncodeF(myHero.networkID)
-	p.pos = 1
-	t1 = p:Decode1()
-	t2 = p:Decode1()
-	t3 = p:Decode1()
-	t4 = p:Decode1()
-	p:Encode1(t1)
-	p:Encode1(t2)
-	p:Encode1(t3)
-	p:Encode1(bit32.band(t4,0xB))
-	p:Encode1(1)--hardcode 1 bitfield
-	p:Encode4(skinId)
-	for i = 1, #champ do
-		p:Encode1(string.byte(champ:sub(i,i)))
-	end
-	for i = #champ + 1, 64 do
-		p:Encode1(0)
-	end
-	p:Hide()
-	RecvPacket(p)
-end
-
-function skinChanged()
-	return Config.VIP.skin1 ~= lastSkin
-end
-
-function OnBugsplat()
-	UpdateWeb(false, ScriptName, id, HWID)
-end
-
--- These variables need to be near the top of your script so you can call them in your callbacks.
-HWID = Base64Encode(tostring(os.getenv("PROCESSOR_IDENTIFIER")..os.getenv("USERNAME")..os.getenv("COMPUTERNAME")..os.getenv("PROCESSOR_LEVEL")..os.getenv("PROCESSOR_REVISION")))
--- DO NOT CHANGE. This is set to your proper ID.
-id = 53
-ScriptName = "Godyr"
-
--- Thank you to Roach and Bilbao for the support!
-assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQIDAAAAJQAAAAgAAIAfAIAAAQAAAAQKAAAAVXBkYXRlV2ViAAEAAAACAAAADAAAAAQAETUAAAAGAUAAQUEAAB2BAAFGgUAAh8FAAp0BgABdgQAAjAHBAgFCAQBBggEAnUEAAhsAAAAXwAOAjMHBAgECAgBAAgABgUICAMACgAEBgwIARsNCAEcDwwaAA4AAwUMDAAGEAwBdgwACgcMDABaCAwSdQYABF4ADgIzBwQIBAgQAQAIAAYFCAgDAAoABAYMCAEbDQgBHA8MGgAOAAMFDAwABhAMAXYMAAoHDAwAWggMEnUGAAYwBxQIBQgUAnQGBAQgAgokIwAGJCICBiIyBxQKdQQABHwCAABcAAAAECAAAAHJlcXVpcmUABAcAAABzb2NrZXQABAcAAABhc3NlcnQABAQAAAB0Y3AABAgAAABjb25uZWN0AAQQAAAAYm9sLXRyYWNrZXIuY29tAAMAAAAAAABUQAQFAAAAc2VuZAAEGAAAAEdFVCAvcmVzdC9uZXdwbGF5ZXI/aWQ9AAQHAAAAJmh3aWQ9AAQNAAAAJnNjcmlwdE5hbWU9AAQHAAAAc3RyaW5nAAQFAAAAZ3N1YgAEDQAAAFteMC05QS1aYS16XQAEAQAAAAAEJQAAACBIVFRQLzEuMA0KSG9zdDogYm9sLXRyYWNrZXIuY29tDQoNCgAEGwAAAEdFVCAvcmVzdC9kZWxldGVwbGF5ZXI/aWQ9AAQCAAAAcwAEBwAAAHN0YXR1cwAECAAAAHBhcnRpYWwABAgAAAByZWNlaXZlAAQDAAAAKmEABAYAAABjbG9zZQAAAAAAAQAAAAAAEAAAAEBvYmZ1c2NhdGVkLmx1YQA1AAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAAAUAAAAFAAAABQAAAAYAAAAGAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAgAAAAHAAAABQAAAAgAAAAJAAAACQAAAAkAAAAKAAAACgAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAAMAAAACwAAAAkAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAGAAAAAgAAAGEAAAAAADUAAAACAAAAYgAAAAAANQAAAAIAAABjAAAAAAA1AAAAAgAAAGQAAAAAADUAAAADAAAAX2EAAwAAADUAAAADAAAAYWEABwAAADUAAAABAAAABQAAAF9FTlYAAQAAAAEAEAAAAEBvYmZ1c2NhdGVkLmx1YQADAAAADAAAAAIAAAAMAAAAAAAAAAEAAAAFAAAAX0VOVgA="), nil, "bt", _ENV))()
