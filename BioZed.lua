@@ -2,7 +2,7 @@
 
 BioZed
 By LucasRP a.k.a DaVinci
-Version: 5
+Version: 6
 
 ]]
 
