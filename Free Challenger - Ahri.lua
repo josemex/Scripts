@@ -1,6 +1,6 @@
 --[[
 
-Challenger Ahri
+Free Challenger Ahri
 By LucasRP a.k.a DaVinci and iCreative
 Version: 1.36
 
