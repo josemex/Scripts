@@ -2,7 +2,7 @@
 
 ExodusCarriopeia
 By LucasRP a.k.a DaVinci
-Version: 2
+Version: 2.1
 
 ]]
 
