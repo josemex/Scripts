@@ -1,15 +1,13 @@
 local scriptname = "Rengar The Mighty"
 local author = "Da Vinci"
-local version = "1.0"
+local version = "1.1"
 local champion = "Rengar"
 if myHero.charName:lower() ~= champion:lower() then return end
 local igniteslot = nil
 local Ferocity = false
 local Invisible = false
 local Passive = { Damage = function(target) return getDmg("P", target, myHero) end }
-local AA = { Range = function(target) 
-local int1 = 0 if ValidTarget(target) then int1 = GetDistance(target.minBBox, target)/2 end
-return myHero.range + GetDistance(myHero, myHero.minBBox) + int1 end , Damage = function(target) return getDmg("AD", target, myHero) end }
+local AA = { Range = 125 , Damage = function(target) return getDmg("AD", target, myHero) end }
 local Q = { Range = 125, Width = nil, Delay = 0.5, Speed = math.huge, LastCastTime = 0, Collision = false, IsReady = function() return myHero:CanUseSpell(_Q) == READY end, Mana = function() return myHero:GetSpellData(_Q).mana end, Damage = function(target) return getDmg("Q", target, myHero) end}
 local W = { Range = 390, Width = 55, Delay = 0.5, Speed = math.huge, LastCastTime = 0, Collision = false, IsReady = function() return myHero:CanUseSpell(_W) == READY end, Mana = function() return myHero:GetSpellData(_W).mana end, Damage = function(target) return getDmg("W", target, myHero) end}
 local E = { Range = 950, Width = 50, Delay = 0.3, Speed = 1500, LastCastTime = 0, Collision = true, IsReady = function() return myHero:CanUseSpell(_E) == READY end, Mana = function() return myHero:GetSpellData(_E).mana end, Damage = function(target) return getDmg("E", target, myHero) end}
@@ -33,8 +31,7 @@ Randuin     = { Range = 500, Slot = function() return GetInventorySlotItem(3143)
 TwinShadows = { Range = 1000, Slot = function() return GetInventorySlotItem(3023) end, reqTarget = false, IsReady = function() return (GetInventorySlotItem(3023) ~= nil and myHero:CanUseSpell(GetInventorySlotItem(3023)) == READY) end, Damage = function(target) return 0 end},
 }
 
-assert(load(Base64Decode("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"), nil, "bt", _ENV))() ScriptStatus("XKNLOKNKNQS") 
---ScriptStatus!	
+assert(load(Base64Decode("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"), nil, "bt", _ENV))() ScriptStatus("XKNLOKNKNQS")
 
 local scriptLoaded = false
 
@@ -49,8 +46,8 @@ local Colors = {
     Blue =  ARGB(255,0,0,255),
 }
 
-require "VPrediction"
-if VIP_USER then require "Prodiction" end
+require("VPrediction")
+if VIP_USER then require("Prodiction") end
 
 function PrintMessage(script, message) 
     print("<font color=\"#6699ff\"><b>" .. script .. ":</b></font> <font color=\"#FFFFFF\">" .. message .. "</font>") 
@@ -66,8 +63,6 @@ function OnLoad()
     DelayAction(arrangePrioritys,5)
     VP = VPrediction()
     prediction = Prediction()
-    iOrb = iOrbwalker()
-    damage = Damage()
     Config = scriptConfig(scriptname.." by "..author, scriptname.."version1")
     EnemyMinions = minionManager(MINION_ENEMY, 900, myHero, MINION_SORT_MAXHEALTH_DEC)
     JungleMinions = minionManager(MINION_JUNGLE, 900, myHero, MINION_SORT_MAXHEALTH_DEC)
@@ -85,10 +80,10 @@ function LoadMenu()
         Config.Combo:addParam("useW","Use W", SCRIPT_PARAM_ONOFF, true)
         Config.Combo:addParam("useE","Use E", SCRIPT_PARAM_ONOFF, true)
 
-        Config.Combo:addSubMenu("Empowerment Settings", "R")
-            Config.Combo.R:addParam("useQ", "Use Empowered Q", SCRIPT_PARAM_ONOFF, true)
-            Config.Combo.R:addParam("useW", "Use Empowered W", SCRIPT_PARAM_ONOFF, true)
-            Config.Combo.R:addParam("useWhp", "W - Min. % HP to Cast", SCRIPT_PARAM_SLICE, 65, 0, 100, 0)
+        Config.Combo:addSubMenu("R Cast Settings", "R")
+            Config.Combo.R:addParam("useQ", "Use Q", SCRIPT_PARAM_ONOFF, true)
+            Config.Combo.R:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, true)
+            Config.Combo.R:addParam("useWhp", "(W) - Min. % HP to Cast", SCRIPT_PARAM_SLICE, 65, 0, 100, 0)
             Config.Combo.R:addParam("useE", "Use E", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte('Z'))
 
     Config:addSubMenu(scriptname.." - Harass Settings", "Harass")
@@ -117,7 +112,6 @@ function LoadMenu()
         if VIP_USER then Config.Misc:addParam("predictionType",  "Type of prediction", SCRIPT_PARAM_LIST, 1, { "vPrediction", "Prodiction"})
         else Config.Misc:addParam("predictionType",  "Type of prediction", SCRIPT_PARAM_LIST, 1, { "vPrediction"}) end
         Config.Misc:addParam("overkill","Overkill % for Dmg Predict..", SCRIPT_PARAM_SLICE, 20, 0, 100, 0)
-        Config.Misc:addParam("bufferAA", "Delay for AA", SCRIPT_PARAM_SLICE, 2, -15, 20)
 
     Config:addSubMenu(scriptname.." - Drawing Settings", "Draw")
         draw = Draw()
@@ -126,15 +120,13 @@ function LoadMenu()
     Config:addSubMenu(scriptname.." - Key Settings", "Keys")
         Config.Keys:addParam("Combo", "Combo", SCRIPT_PARAM_ONKEYDOWN, false, 32)
         Config.Keys:addParam("Harass", "Harass", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("C"))
-        Config.Keys:addParam("Clear", "LaneClear or JungleClear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V"))  
-        Config.Keys:addParam("LastHit", "LastHit", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("X")) 
+        Config.Keys:addParam("Clear", "LaneClear or JungleClear", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("V")) 
         Config.Keys:addParam("Flee", "Flee", SCRIPT_PARAM_ONKEYDOWN, false,string.byte("T"))
 
         Config.Keys.Combo = false
         Config.Keys.Harass = false
         Config.Keys.Flee = false
         Config.Keys.Clear = false
-        Config.Keys.LastHit = false
 
     PrintMessage(scriptname, "Script by "..author..".")
     PrintMessage(scriptname, "Have Fun!.")
@@ -159,16 +151,22 @@ function OnTick()
         KillSteal()
     --run
     if Config.Keys.Flee then Flee() end
-    
-    if not iOrb:CanCast() or iOrb:RequiresAA() then return end
-
+    --Fight
     if Config.Keys.Combo then Combo() end
-		if Config.Combo.R.useE then CastE() end
+        if Config.Combo.R.useE then CastE() end
     --qharass
     if Config.Keys.Harass then Harass() end
-		
-		if Config.Keys.Clear then Clear() end
-		Magnet()
+        
+        if Config.Keys.Clear then Clear() end
+
+    for i = 1, myHero.buffCount do
+        local buff = myHero:getBuff(i)
+        if BuffIsValid(buff) then
+            --print(buff.name)
+        end
+    end
+    --print(" ")
+        Magnet()
 end
 
 function KillSteal()
@@ -196,10 +194,10 @@ function Combo()
         if Config.Combo.useW then CastW(target) end
         if Config.Combo.useE and not Invisible then CastE(target) end
     end
-		if Ferocity then
+        if Ferocity then
         if Config.Combo.R.useQ then CastQ(target) end
         if Config.Combo.R.useW then CastWR(target) end
-        if Config.Combo.R.useE then CastE(target) end  	
+        if Config.Combo.R.useE then CastE(target) end   
     end
 end
 
@@ -215,8 +213,8 @@ end
 function CastQ(target)
     if Q.IsReady() and ValidTarget(target, Q.Range) then 
         CastSpell(_Q)
-				--myHero:Attack(target)
-				--SOWi:resetAA()
+                myHero:Attack(target)
+                SOWi:resetAA()
     end
 end
 
@@ -241,33 +239,35 @@ function CastE(target)
     end
 end
 
-
+function TrueRange()
+    return myHero.range + GetDistance(myHero, myHero.minBBox)
+end
 
 function Magnet()
-    if target ~= nil and (Combo or Harass) and ValidTarget(target, AA.Range(target)) then
-		local dist = GetDistance(target)
-		if dist < AA.Range(target) and dist > 50 then 
-			StayClose(target, true)
-		elseif dist <= 50 then
-			StayClose(target, false)
-		end
+    if target ~= nil and (Combo or Harass) and ValidTarget(target, (TrueRange() + 50)) then
+        local dist = GetDistance(target)
+        if dist < (TrueRange() + 50) and dist > 50 then 
+            StayClose(target, true)
+        elseif dist <= 50 then
+            StayClose(target, false)
+        end
     end
 end
 
 function StayClose(target, mode)
-	if mode then
-		local myVector = Vector(myHero.x, myHero.y, myHero.z)
-		local targetVector = Vector(unit.x, unit.y, unit.z)
-		local ClosePoint1 = targetVector + (myVector - targetVector):normalized()*100
-		local ClosePoint2 = targetVector - (myVector - targetVector):normalized()*100
-		if GetDistance(ClosePoint1) < GetDistance(ClosePoint2) then
-			--SOWi:OrbWalk(target, ClosePoint1)
-		else
-			--SOWi:OrbWalk(target, ClosePoint2)
-		end
-	else
-		--SOWi:OrbWalk(target, myHero)
-	end
+    if mode then
+        local myVector = Vector(myHero.x, myHero.y, myHero.z)
+        local targetVector = Vector(unit.x, unit.y, unit.z)
+        local ClosePoint1 = targetVector + (myVector - targetVector):normalized()*100
+        local ClosePoint2 = targetVector - (myVector - targetVector):normalized()*100
+        if GetDistance(ClosePoint1) < GetDistance(ClosePoint2) then
+            SOWi:OrbWalk(target, ClosePoint1)
+        else
+            SOWi:OrbWalk(target, ClosePoint2)
+        end
+    else
+        SOWi:OrbWalk(target, myHero)
+    end
 end
 
 function Clear()
@@ -277,7 +277,7 @@ function Clear()
         if ValidTarget(minion, 1000) then
             if not Ferocity then 
                 if Config.LaneClear.useE and E.IsReady() then
-									CastE(minion)
+                                    CastE(minion)
                 end
 
                 if Config.LaneClear.useQ and Q.IsReady() then
@@ -289,7 +289,7 @@ function Clear()
                 end
             else
                 if Config.Combo.R.useE and E.IsReady() then
-									CastE(minion)
+                                    CastE(minion)
                 end
 
                 if Config.Combo.R.useQ and Q.IsReady() then
@@ -307,7 +307,7 @@ function Clear()
         if ValidTarget(minion, 1000) then
             if not Ferocity then
                 if Config.JungleClear.useE and E.IsReady() then
-									CastE(minion)
+                                    CastE(minion)
                 end
 
                 if Config.JungleClear.useQ and Q.IsReady() then
@@ -319,7 +319,7 @@ function Clear()
                 end
             else
                 if Config.Combo.R.useE and E.IsReady() then
-									CastE(minion)
+                                    CastE(minion)
                 end
 
                 if Config.Combo.R.useQ and Q.IsReady() then
@@ -335,6 +335,80 @@ function Clear()
 end
 
 
+function getChampionPriority(i, team, range)
+    for idx, champion in ipairs(team) do
+        if i == 1 and priorityTable.p1[champion.charName] ~= nil then return champion
+        elseif i == 2 and priorityTable.p2[champion.charName] ~= nil then return champion
+        elseif i == 3 and priorityTable.p3[champion.charName] ~= nil then return champion
+        elseif i == 4 and priorityTable.p4[champion.charName] ~= nil then return champion
+        elseif i == 5 and priorityTable.p5[champion.charName] ~= nil then return champion
+        end
+    end
+end
+
+function getPriorityChampion(champion)
+    if priorityTable.p1[champion.charName] ~= nil then
+        return 1
+    elseif priorityTable.p2[champion.charName] ~= nil then
+        return 2
+    elseif priorityTable.p3[champion.charName] ~= nil then
+        return 3
+    elseif priorityTable.p4[champion.charName] ~= nil then
+        return 4
+    elseif priorityTable.p5[champion.charName] ~= nil then
+        return 5
+    end
+    return 5
+end
+
+function getBestPriorityChampion(source, team, range)
+    local bestPriority = nil
+    local bestChampion = nil
+    for idx, champion in ipairs(team) do
+        if champion.valid and champion.visible then
+            if GetDistance(source, champion) <= range then
+                local priority = getPriorityChampion(champion)
+                if bestPriority == nil then
+                    bestPriority = priority
+                    bestChampion = champion
+                elseif priority < bestPriority then
+                    bestPriority = priority
+                    bestChampion = champion
+                end
+            end
+        end
+    end
+    return bestChampion
+end
+
+function getNearestChampion(source, team, range)
+    local nearest = nil
+    for idx, champion in ipairs(team) do
+        if champion.valid and champion.visible then
+            if GetDistance(source, champion) <= range then
+                if nearest == nil then
+                    nearest = champion
+                elseif GetDistance(source, champion) < GetDistance(source, nearest) then
+                    nearest = champion
+                end
+            end
+        end
+    end
+    return nearest
+end
+
+function getPercentageTeam(source, team, range) -- GetAllyHeroes() or GetEnemyHeroes()
+    local count = 0
+    if team == GetAllyHeroes() then count = 1 end
+    for idx, champion in ipairs(team) do
+        if champion.valid and champion.visible then
+            if GetDistance(source, champion) <= range then
+                count = count + champion.health/champion.maxHealth
+            end
+        end
+    end
+    return count
+end
 
 
 function OnProcessSpell(unit, spell)
@@ -387,23 +461,8 @@ function GetCustomTarget()
     return ts.target
 end
 
-function OrbLoad()
-    if _G.Reborn_Initialised then
-        _G.AutoCarry.Keys:RegisterMenuKey(Config.Keys, "Combo", AutoCarry.MODE_AUTOCARRY)
-        _G.AutoCarry.Keys:RegisterMenuKey(Config.Keys, "Harass", AutoCarry.MODE_MIXEDMODE)
-        _G.AutoCarry.Keys:RegisterMenuKey(Config.Keys, "Clear", AutoCarry.MODE_LANECLEAR)
-        _G.AutoCarry.Keys:RegisterMenuKey(Config.Keys, "LastHit", AutoCarry.MODE_LASTHIT)
-        _G.AutoCarry.MyHero:AttacksEnabled(true)
-        PrintMessage(scriptname, "To have a better experience turn off SAC:R")
-    elseif _G.Reborn_Loaded then
-        DelayAction(OrbLoad, 1)
-    else
-        Config:addSubMenu(scriptname.." - Orbwalking Settings", "Orbwalking")
-        iOrb:LoadMenu(Config.Orbwalking)
-    end
-end
 
---[[
+
 function OrbLoad()
     if _G.Reborn_Initialised then
         _G.AutoCarry.Keys:RegisterMenuKey(Config.Keys, "Combo", AutoCarry.MODE_AUTOCARRY)
@@ -421,7 +480,7 @@ function OrbLoad()
         print("You will need an orbwalker")
     end
 end
-]]
+
 
 function CountEnemiesNear(source, range)
     local Count = 0
@@ -605,497 +664,10 @@ function getSpellType(unit, spellName)
 end
 
 
-class "iOrbwalker"
-function iOrbwalker:__init()
-    self.isAttacking = false
-    self.bufferAA = false 
-    self.nextAA = 0
-    self.baseWindUpTime = 3
-    self.baseAnimationTime = 0.665
-    self.windUpTime = 3
-    self.animationTime = 0.665
-    self.predHealthLimit = -20
-    self.delay = 0.07
-    self.lastWait = 0
-    self.dataUpdated = false
-    self.Menu = nil
-    self.target = nil
-    self.reset = false
-    AddProcessSpellCallback(function(unit, spell) self:OnProcessSpell(unit, spell) end)
-end
-
-function iOrbwalker:RequiresAA()
-    if self.reset and ValidTarget(target, AA.Range(target)) then return true
-    elseif self.reset then self.reset = false return false 
-    else return false end
-end
-
-function iOrbwalker:LoadMenu(Menu)
-
-    self.Menu = Menu
-    self.Menu:addSubMenu("Drawing Settings", "Draw")
-            self.Menu.Draw:addParam("myAARange","My AA Range", SCRIPT_PARAM_ONOFF, true)
-            self.Menu.Draw:addParam("enemyAARange","Enemy AA Range", SCRIPT_PARAM_ONOFF, true)
-            self.Menu.Draw:addParam("HoldDraw","Hold position radius", SCRIPT_PARAM_ONOFF, true)
-            self.Menu.Draw:addParam("Target","Draw circle target", SCRIPT_PARAM_ONOFF, true)
-        self.Menu:addSubMenu("Adjustment Settings", "Adjustment")
-            self.Menu.Adjustment:addParam("farmDelay", "Delay on Farm (Req. type of delay)", SCRIPT_PARAM_SLICE, 70, 0, 150, 0)
-            self.Menu.Adjustment:addParam("typeOfDelay", "Farm Adjustment", SCRIPT_PARAM_LIST, 1, {"None", "Earlier Hit", "Later Hit"})
-            self.Menu.Adjustment:addParam("keyDelay", "Switcher for Farm Adjustment", SCRIPT_PARAM_ONKEYDOWN, false, string.byte("L"))
-        self.Menu:addParam("HoldRadius", "Hold position radius", SCRIPT_PARAM_SLICE, 80, 60, 250)
-        self.Menu:addParam("minionRange", "Range to analyze minions", SCRIPT_PARAM_SLICE, 550, 300, 900)
-        self.Menu:addParam("PriorizeFarm","Priorize Farm over Harass", SCRIPT_PARAM_ONOFF, true)
-    self.Menu.Adjustment:permaShow("typeOfDelay")
-
-    AddDrawCallback(function() self:OnDraw() end)
-    AddTickCallback(function() self:OnTick() end)
-    AddMsgCallback(function(msg, key) self:OnWndMsg(msg, key) end)
-    AddCreateObjCallback(function(obj) self:OnCreateObj(obj) end)
-end
-
-function iOrbwalker:OnWndMsg(msg, key)
-
-    if msg == KEY_UP then
-       if key == self.Menu.Adjustment._param[3].key then
-            self.Menu.Adjustment.typeOfDelay = self.Menu.Adjustment.typeOfDelay + 1
-            if self.Menu.Adjustment.typeOfDelay == 4 then self.Menu.Adjustment.typeOfDelay = 1 end
-       end
-    end
-end
-
-function iOrbwalker:OnCreateObj(obj)
-    if obj == nil then return end
-end
-
-function iOrbwalker:OnProcessSpell(unit, spell)
-    if unit== nil or spell == nil then return end 
-    if unit.isMe then
-        if spell.name:lower():find("basicattack") then
-            if not self.dataUpdated then
-                self.baseAnimationTime = 1 / (spell.animationTime * myHero.attackSpeed)
-                self.baseWindUpTime = 1 / (spell.windUpTime * myHero.attackSpeed)
-                self.dataUpdated = true
-            end
-            self.animationTime = 1 / (spell.animationTime * myHero.attackSpeed)
-            self.windUpTime = 1 / (spell.windUpTime * myHero.attackSpeed)
-            self.isAttacking = true
-            self.nextAA = os.clock() + (self:AnimationTime() - self:Latency()) - 0.2
-            local time = math.max(spell.windUpTime - self:Latency() + Config.Misc.bufferAA * 0.01, 0)
-            DelayAction(function() self.isAttacking = false self.reset = false end,  time)
-
-        elseif spell.name:lower():find("tiamat") or spell.name:lower():find("hydra") then
-            self:ResetAA()
-        elseif spell.name:lower():find("rengarq") then
-            --DelayAction(function() self:ResetAA() end, self:WindUpTime() - self:Latency() * 2 )
-            self:ResetAA()
-        end
-    end
-end
-
-
-
-function iOrbwalker:OnTick() 
-    if self.Menu == nil then return end
-    minionRange = self.Menu.minionRange
-    if Config.Keys.Harass or Config.Keys.Clear or Config.Keys.LastHit then
-        EnemyMinions:update()
-        JungleMinions:update()
-    end
-    
-    if Config.Keys.Combo then
-        local target = self:Combo()
-        if ValidTarget(target) then self:Orbwalk(target) else self:Orbwalk(nil) end
-    elseif Config.Keys.Harass then
-        local target, boolean = self:Harass()
-        if ValidTarget(target) and boolean then self:Orbwalk(target) else self:Orbwalk(nil) end
-    elseif Config.Keys.LastHit then
-        local target, boolean = self:LastHit()
-        if ValidTarget(target) and boolean then self:Orbwalk(target) else self:Orbwalk(nil) end
-    elseif Config.Keys.Clear then
-        local killableMinion, farKillableMinion, almostKillableMinion, whileWaitingMinion, bestJungle  = self:LaneClear()
-        if ValidTarget(killableMinion) then self:Orbwalk(killableMinion)
-        elseif ValidTarget(whileWaitingMinion) then self:Orbwalk(whileWaitingMinion)
-        elseif ValidTarget(bestJungle) then self:Orbwalk(bestJungle)
-        else self:Orbwalk(nil) end
-        
-    end
-end
-
-function iOrbwalker:CanAttack()
-    return self.nextAA <= os.clock() and not self.bufferAA and not self.isAttacking
-end
-
-function iOrbwalker:Latency()
-    return GetLatency() / 2000
-end
-
-function iOrbwalker:WindUpTime()
-    return 1 / (myHero.attackSpeed * self.baseWindUpTime)
-end
-function iOrbwalker:AnimationTime()
-    return 1 / (myHero.attackSpeed * self.baseAnimationTime)
-end
-
-function iOrbwalker:ResetAA()
-    local target = self:getTarget()
-    --[[
-    if ValidTarget(target) then
-        if damage:requiresAA(target) and (Config.Keys.Combo or Config.Keys.Harass) then
-            modes:Insert("AA", target, 3)
-        elseif not (Config.Keys.Combo or Config.Keys.Harass) then
-            modes:Insert("AA", target, 3)
-        end
-    end
-    ]]
-    if self.Menu == nil and _G.AutoCarry then 
-        _G.AutoCarry.Orbwalker:ResetAttackTimer()
-    end
-    self.isAttacking = false
-    self.nextAA = 0
-    self.reset = true
-    
-end
-
-function iOrbwalker:CanCast()
-    if self.Menu == nil then return not self.isAttacking and not self.bufferAA end
-    if self.Menu.PriorizeFarm and Config.Keys.Harass then
-        local minions = self:getKillableMinions()
-        if minions ~= nil then
-            if #minions > 0 then 
-                 for i, minion in pairs(minions) do
-                    if ValidTarget(minion, AA.Range(minion)) then 
-                        return false
-                    end
-                end
-            else return true end
-        end
-    end
-    return not self.isAttacking and not self.bufferAA
-end
-
-function iOrbwalker:InRange(target)
-    return ValidTarget(target) and ValidTarget(target, AA.Range(target))
-end
-
-function iOrbwalker:Orbwalk(target)
-    if ValidTarget(target, ts.range) then self.target = target else self.target = nil end
-    if ValidTarget(target) and self:CanAttack() and self:InRange(target) then
-        myHero:Attack(target)
-        self.bufferAA = true
-        DelayAction(function()
-            self.bufferAA = false
-        end, self:Latency() * 2)
-    else 
-        if GetDistance(myHero, mousePos) > Config.Orbwalking.HoldRadius and not self.isAttacking and not self.bufferAA then
-            myHero:MoveTo(mousePos.x, mousePos.z)
-        end
-    end
-end
-
-function iOrbwalker:getTarget()
-    if self.Menu == nil and _G.AutoCarry then
-       return _G.AutoCarry.Crosshair:GetTarget()
-    else
-        return self.target
-    end
-end
-
-function iOrbwalker:OnDraw()
-
-    if self.Menu == nil then return end
-    if self.Menu.Draw.HoldDraw then
-        draw:DrawCircle2(myHero.x, myHero.y, myHero.z, self.Menu.HoldRadius, Colors.Blue, 1)
-    end
-
-    if self.Menu.Draw.myAARange then
-        draw:DrawCircle2(myHero.x, myHero.y, myHero.z, AA.Range(self:getTarget()), Colors.White, 1)
-    end
-
-    if self.Menu.Draw.enemyAARange then
-        for idx, enemy in ipairs(GetEnemyHeroes()) do
-            if ValidTarget(enemy) and GetDistance(enemy, mousePos) < visionRange then
-                draw:DrawCircle2(enemy.x, enemy.y, enemy.z, self:getAARange(enemy), Colors.White, 1)
-            end
-        end
-    end
-
-    if (Config.Keys.Combo or Config.Keys.Harass or Config.Keys.Clear or Config.Keys.LastHit) and self.Menu.Draw.Target then
-        if Config.Keys.Combo then
-        elseif Config.Keys.Harass then
-            local target, boolean = self:Harass()
-            if ValidTarget(target) then
-                if boolean and target.name:lower():find("minion") then draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.Red, 5)
-                else draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.White, 1) end
-            end
-        elseif Config.Keys.LastHit then
-            local target, boolean = self:LastHit()
-            if ValidTarget(target) then
-                if boolean then draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.Red, 5)
-                else draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.White, 1) end
-            end
-        elseif Config.Keys.Clear then
-            local killableMinion, farKillableMinion, almostKillableMinion, whileWaitingMinion, bestJungle = self:LaneClear()
-            if ValidTarget(killableMinion) then local target = killableMinion draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.Red, 5) end
-            if ValidTarget(farKillableMinion) then local target = farKillableMinion draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.White, 5) end
-            if ValidTarget(almostKillableMinion) then local target = almostKillableMinion draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.Yellow, 1) end
-            if ValidTarget(whileWaitingMinion) then local target = whileWaitingMinion draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.Green, 1) end
-            if ValidTarget(bestJungle) then local target = bestJungle draw:DrawCircle2(target.x, target.y, target.z, VP:GetHitBox(target), Colors.White, 1) end
-            
-        end
-    end
-
-end
-
-function iOrbwalker:getAARange(unit)
-    return ValidTarget(unit) and unit.range + unit.boundingRadius + myHero.boundingRadius - 10 or 0
-end
-
-function iOrbwalker:Combo()
-   return ts.target
-end
-
-function iOrbwalker:LaneClear()
-    local bestMinions = {}
-    local killables = self:getKillableMinions()
-    local killableMinion = nil
-    local almostKillableMinion = nil
-    local whileWaitingMinion = nil
-    local farKillableMinion = nil
-    if #killables > 0 then
-        for i, minion in pairs(killables) do
-            if ValidTarget(minion, AA.Range(minion)) then 
-                --table.insert(bestMinions, #bestMinions + 1, minion)
-                --return {minion}
-                killableMinion = minion
-                break
-            end
-        end
-    end
-    if #killables > 0 then
-        for i, minion in pairs(killables) do
-            if ValidTarget(minion, minionRange) and GetDistance(myHero, minion) > AA.Range(minion) then 
-                if farKillableMinion == nil then
-                    farKillableMinion = minion
-                elseif GetDistance(myHero, farKillableMinion) > GetDistance(myHero, minion) then
-                    farKillableMinion = minion
-                end
-            end
-        end
-    end
-    --if #bestMinions > 0 then return bestMinions, true, false end
-
-    bestMinions = {}
-    local waitMinion = self:ShouldWait() 
-    local bestMinion = nil
-    if not waitMinion and os.clock() - self.lastWait > 0.5 then
-        for i, minion in pairs(EnemyMinions.objects) do
-            if ValidTarget(minion, minionRange) then
-                local predHealth = prediction:getPredictedHealth(minion, 2)
-                if predHealth > 2 * damage:getDamageToMinion(minion) then
-                    
-                    if bestMinion == nil then bestMinion = minion
-                    elseif GetDistance(myHero, bestMinion) > GetDistance(myHero, minion) then bestMinion = minion end
-                end
-            end
-        end
-        if bestMinion ~= nil then whileWaitingMinion = bestMinion end
-    end
-    if waitMinion and not killableMinion then
-        almostKillableMinion = waitMinion
-    elseif os.clock() - self.lastWait > 0.5 or not ValidTarget(waitMinion) then
-        almostKillableMinion = nil
-    end
-    --if #bestMinions > 0 then return bestMinions, false, true end
-
-
-
-    bestMinions = {}
-    bestJungle = nil
-    for i, minion in pairs(JungleMinions.objects) do
-        if ValidTarget(minion, AA.Range(minion)) then
-            --[[
-            if #bestMinions > 0 then
-                local minion2 = bestMinions[#bestMinions]
-                 if minion2.maxHealth > minion.maxHealth then
-                     table.insert(bestMinions, #bestMinions + 1, minion)
-                 else
-                     table.insert(bestMinions, #bestMinions, minion)
-                 end
-            else
-                table.insert(bestMinions, 1, minion)
-            end]]
-            if bestJungle == nil then
-                bestJungle = minion
-            elseif bestJungle.maxHealth < minion.maxHealth then
-                bestJungle = minion
-            end
-        end
-    end
-
-    return killableMinion, farKillableMinion, almostKillableMinion, whileWaitingMinion, bestJungle
-    --if #bestMinions > 0 then return bestMinions, false, true end
-    --bestMinions = {}
-    --return bestMinions, false, false
-end
-
-function iOrbwalker:LastHit()
-    local killables = self:getKillableMinions()
-    if #killables > 0 then
-        for i, minion in pairs(killables) do
-            if ValidTarget(minion, AA.Range(minion)) then 
-                return minion, true
-            elseif ValidTarget(minion) and GetDistance(myHero, minion) > AA.Range(minion) then 
-                return minion, false
-            end
-        end
-    end
-    local almostKillables = self:getAlmostKillableMinions()
-    for i, minion in pairs(almostKillables) do
-        if ValidTarget(minion, minionRange) then 
-            return minion, false
-        end
-    end
-    
-end
-
-function iOrbwalker:Harass()
-    if not self.Menu.PriorizeFarm and ValidTarget(ts.target, AA.Range(ts.target)) then 
-        return ts.target, true
-    end
-    local killables = self:getKillableMinions()
-    if #killables > 0 then
-        for i, minion in pairs(killables) do
-            if ValidTarget(minion, AA.Range(minion)) then 
-                return minion, true
-            end
-        end
-    end
-    if self.Menu.PriorizeFarm and ValidTarget(ts.target, AA.Range(ts.target) + 50) then 
-        return ts.target, true
-    end
-    if #killables > 0 then
-        for i, minion in pairs(killables) do
-            if ValidTarget(minion) and GetDistance(myHero, minion) > AA.Range(minion) then
-                return minion, false
-            end
-        end
-    end
-    local almostKillables = self:getAlmostKillableMinions()
-    for i, minion in pairs(almostKillables) do
-        if ValidTarget(minion, minionRange) then 
-            return minion, false
-        end
-    end
-    
-
-end
-
-function iOrbwalker:getKillableMinions()
-    local bestMinions = {}
-    local bestBigMinions = {}
-    --big minion first
-    for i, minion in pairs(EnemyMinions.objects) do
-        if ValidTarget(minion, minionRange) and not minion.dead and minion.charName:lower():find("cannon") then
-            local predHealth = prediction:getPredictedHealth(minion, 1)
-            if damage:getDamageToMinion(minion) > predHealth and predHealth > self.predHealthLimit then
-                table.insert(bestBigMinions, #bestBigMinions + 1, minion)
-            end
-        end
-    end
-    --small minions after
-    for i, minion in pairs(EnemyMinions.objects) do
-        if ValidTarget(minion, minionRange) and not minion.dead and not minion.charName:lower():find("cannon") then
-            local predHealth = prediction:getPredictedHealth(minion, 1)
-            if damage:getDamageToMinion(minion) > predHealth and predHealth > self.predHealthLimit then
-                
-                if #bestMinions > 0 then
-                    local minion2 = bestMinions[#bestMinions]
-                    local predHealth2 = prediction:getPredictedHealth(minion2, 1)
-                    if predHealth2/minion2.maxHealth < predHealth/minion.maxHealth then
-                        table.insert(bestMinions, #bestMinions + 1, minion)
-                    else
-                        table.insert(bestMinions, #bestMinions, minion)
-                    end
-                else
-                    table.insert(bestMinions, 1, minion)
-                end
-                
-                --table.insert(bestMinions, #bestMinions + 1, minion)
-            end
-        end
-    end
-    if #bestBigMinions > 0 then
-        for i, bigMinion in pairs(bigMinions) do
-            table.insert(bestMinions, i, bigMinion)
-        end
-    end
-    return bestMinions
-end
-
-function iOrbwalker:getAlmostKillableMinions()
-    bestMinions = {}
-    for i, minion in pairs(EnemyMinions.objects) do
-        if ValidTarget(minion, minionRange) and not minion.dead then
-            local predHealth = prediction:getPredictedHealth(minion, 1)
-            if predHealth > self.predHealthLimit then
-                if #bestMinions > 0 then
-                    local minion2 = bestMinions[#bestMinions]
-                    local predHealth2 = prediction:getPredictedHealth(minion2, 1)
-                    if predHealth2/minion2.maxHealth < predHealth/minion.maxHealth then
-                        table.insert(bestMinions, #bestMinions + 1, minion)
-                    else
-                        table.insert(bestMinions, #bestMinions, minion)
-                    end
-                else
-                    table.insert(bestMinions, 1, minion)
-                end
-            end
-        end
-    end
-    return bestMinions
-end
-
-
-
-function iOrbwalker:ShouldWait()
-    for i, minion in pairs(EnemyMinions.objects) do
-        if ValidTarget(minion, minionRange) then
-            if ValidTarget(minion, AA.Range(minion)) then
-                if damage:getDamageToMinion(minion) > prediction:getPredictedHealth(minion, 2) then
-                    self.lastWait = os.clock()
-                    return minion
-                end
-            end
-        end
-    end
-end
-
---farm adjustment
-function iOrbwalker:OnWndMsg(msg, key)
-    if self.Menu == nil then return end
-    if msg == KEY_UP then
-       if key == self.Menu.Adjustment._param[3].key then
-            self.Menu.Adjustment.typeOfDelay = self.Menu.Adjustment.typeOfDelay + 1
-            if self.Menu.Adjustment.typeOfDelay == 4 then self.Menu.Adjustment.typeOfDelay = 1 end
-       end
-   end
-end
-
-function iOrbwalker:getFarmDelay()
-    local output = 0
-    if self.Menu.Adjustment.typeOfDelay == 3 then
-        output = self.Menu.Adjustment.farmDelay/1000
-    elseif self.Menu.Adjustment.typeOfDelay == 2 then
-        output = (-1) * self.Menu.Adjustment.farmDelay/1000
-    end
-    return output
-end
-
-
-class "Prediction"
+class("Prediction")
 function Prediction:__init()
     self.delay = 0.07
-    self.ProjectileSpeed = myHero.range > 100 and VP:GetProjectileSpeed(myHero) or math.huge
+    self.ProjectileSpeed = myHero.range > 300 and VP:GetProjectileSpeed(myHero) or math.huge
 end
 
 function Prediction:getPrediction(unit, range, speed, delay, width, source, collision, skillshot)
@@ -1118,10 +690,10 @@ function Prediction:getTimeMinion(minion, mode)
     local time = 0
     --lasthit
     if mode == 1 then
-        time = iOrb:WindUpTime() + GetDistance(myHero.pos, minion.pos) / self.ProjectileSpeed - self.delay
+        time = iOrb:WindUpTime() + GetDistance(myHero, minion) / self.ProjectileSpeed - self.delay
     --laneclear
     elseif mode == 2 then
-        time = iOrb:AnimationTime() + GetDistance(myHero.pos, minion.pos) / self.ProjectileSpeed - self.delay
+        time = iOrb:AnimationTime() + GetDistance(myHero, minion) / self.ProjectileSpeed - self.delay
         time = time * 2
     end
     return time
@@ -1149,7 +721,7 @@ function Prediction:getPredictedPos(unit, delay, speed, from, collision)
     return VP:GetPredictedPos(unit, delay, speed, from, collision)
 end
 
-class "Damage"
+class("Damage")
 function Damage:__init()
 
 end
@@ -1239,7 +811,7 @@ function Damage:getOverkill()
     return (100 + Config.Misc.overkill)/100
 end
 
-class "Draw"
+class("Draw")
 function Draw:__init()
     self.Menu = nil
 end
