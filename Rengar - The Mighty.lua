@@ -1,6 +1,6 @@
 local scriptname = "Rengar The Mighty"
 local author = "Da Vinci"
-local version = "1.1"
+local version = "1.3"
 local champion = "Rengar"
 if myHero.charName:lower() ~= champion:lower() then return end
 local igniteslot = nil
@@ -191,7 +191,7 @@ function Combo()
     if not ValidTarget(target) then return end
     if not Ferocity then
         if Config.Combo.useQ then CastQ(target) end
-        if Config.Combo.useW then CastW(target) end
+        if Config.Combo.useW and not Invisible then CastW(target) end
         if Config.Combo.useE and not Invisible then CastE(target) end
     end
         if Ferocity then
