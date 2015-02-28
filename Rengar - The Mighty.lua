@@ -213,7 +213,6 @@ end
 function CastQ(target)
     if Q.IsReady() and ValidTarget(target, Q.Range) then 
         CastSpell(_Q)
-                myHero:Attack(target)
                 SOWi:resetAA()
     end
 end
