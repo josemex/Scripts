@@ -85,6 +85,7 @@ function LoadMenu()
             Config.Combo.R:addParam("useW", "Use W", SCRIPT_PARAM_ONOFF, true)
             Config.Combo.R:addParam("useWhp", "(W) - Min. % HP to Cast", SCRIPT_PARAM_SLICE, 65, 0, 100, 0)
             Config.Combo.R:addParam("useE", "Use E", SCRIPT_PARAM_ONKEYTOGGLE, false, string.byte('Z'))
+            Config.Combo.R:permaShow("useE")
 
     Config:addSubMenu(scriptname.." - Harass Settings", "Harass")
         Config.Harass:addParam("useQ","Use Q", SCRIPT_PARAM_ONOFF, true)
