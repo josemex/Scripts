@@ -36,7 +36,6 @@ assert(load(Base64Decode("G0x1YVIAAQQEBAgAGZMNChoKAAAAAAAAAAAAAQIKAAAABgBAAEFAAA
 local scriptLoaded = false
 
 local visionRange = 1800
-
 local Colors = { 
     -- O R G B
     Green =  ARGB(255, 0, 255, 0), 
@@ -45,6 +44,13 @@ local Colors = {
     White =  ARGB(255, 255, 255, 255),
     Blue =  ARGB(255,0,0,255),
 }
+
+local isInBush = false
+local isJumping = false
+local LastJump = 0 
+function isUlting()
+    return TargetHaveBuff("rengarr", myHero)
+end
 
 require("VPrediction")
 if VIP_USER then require("Prodiction") end
@@ -63,6 +69,7 @@ function OnLoad()
     DelayAction(arrangePrioritys,5)
     VP = VPrediction()
     prediction = Prediction()
+    buffM = BuffManager()
     Config = scriptConfig(scriptname.." by "..author, scriptname.."version1")
     EnemyMinions = minionManager(MINION_ENEMY, 900, myHero, MINION_SORT_MAXHEALTH_DEC)
     JungleMinions = minionManager(MINION_JUNGLE, 900, myHero, MINION_SORT_MAXHEALTH_DEC)
@@ -195,10 +202,14 @@ function Combo()
         if Config.Combo.useW and not Invisible then CastW(target) end
         if Config.Combo.useE and not Invisible then CastE(target) end
     end
-        if Ferocity then
+    if Ferocity then
         if Config.Combo.R.useQ then CastQ(target) end
         if Config.Combo.R.useW then CastWR(target) end
-        if Config.Combo.R.useE then CastE(target) end   
+        if Config.Combo.R.useE and isJumping or isInBush then
+					CastE(target) 
+				elseif os.clock()-LastJump > 6 then 
+					CastE(target) 
+				end   
     end
 end
 
@@ -226,14 +237,14 @@ function CastW(target)
 end
 
 function CastWR()
-    if (myHero.health / myHero.maxHealth) * 100 <= Config.Combo.R.useWhp then
+    if (myHero.health / myHero.maxHealth) * 100 <= Config.Combo.R.useWhp and ValidTarget(target, W.Range) then
         CastSpell(_W)
     end
 end
 
 function CastE(target)
     if E.IsReady() and ValidTarget(target, E.Range) then
-        local CastPosition, HitChance, Position = VP:GetLineCastPosition(target, E.Delay, E.Width, E.Range, E.Speed, myHero)
+        local CastPosition, HitChance, HeroPosition = prediction:getPrediction(target, E.Range, E.Speed, E.Delay, E.Width, myHero, E.Collision, "line")
         if HitChance >= 2 then
             CastSpell(_E,CastPosition.x, CastPosition.z)
         end    
@@ -414,7 +425,8 @@ end
 
 function OnProcessSpell(unit, spell)
     if myHero.dead or unit == nil or not scriptLoaded then return end
-    if not unit.isMe then
+    if unit.isMe then
+			--print(spell.name)
     end
 end
 
@@ -422,7 +434,21 @@ function RecvPacket(p)
     -- body
 end
 
+
+--buffName Ult: rengarr
+--created bush object.name:lower():find("ring")
+--jumping object.name:lower():find("leap")
 function OnCreateObj(object)
+    if object and GetDistanceSqr(myHero, object) < 1000 * 1000 and object.name:lower():find("rengar") then 
+        if object.name:lower():find("ring") then
+            isInBush = true
+        elseif object.name:lower():find("leap") then
+            isJumping = true
+						LastJump = os.clock()
+        end
+    end
+		
+		
   if object.name:find("Rengar_Base_P_Buf_Max.troy") then
       Ferocity = true
   end
@@ -432,6 +458,13 @@ function OnCreateObj(object)
 end
 
 function OnDeleteObj(object)
+    if object and GetDistanceSqr(myHero, object) < 1000 * 100 and object.name:lower():find("rengar") then 
+        if object.name:lower():find("ring") then
+            isInBush = false
+        elseif object.name:lower():find("leap") then
+            isJumping = false
+        end
+    end
   if object.name:find("Rengar_Base_P_Buf_Max.troy") then
     Ferocity = false
   end
@@ -897,5 +930,84 @@ function Draw:DrawCircle2(x, y, z, radius, color, width)
     local sPos = WorldToScreen(D3DXVECTOR3(tPos.x, tPos.y, tPos.z))
     if OnScreen({ x = sPos.x, y = sPos.y }, { x = sPos.x, y = sPos.y }) then
         self:DrawCircleNextLvl(x, y, z, radius, width, color, 75 + 2000 * (100 - self.Menu.Quality)/100) 
+    end
+end
+
+class("BuffManager")
+function BuffManager:__init()
+  self.heroes = {}
+  self.buffs = {}
+  for i = 1, heroManager.iCount do
+    local enemy = heroManager:GetHero(i)
+    table.insert(self.heroes, enemy)
+    self.buffs[enemy.networkID] = {}
+  end
+  AddTickCallback(function() self:Tick() end)
+end
+function BuffManager:Tick()
+  for _, enemy in ipairs(self.heroes) do
+    for i = 1, enemy.buffCount do
+      local buf = enemy:getBuff(i)
+      if self:Valid(buf) then
+        local tab = {
+          unit = enemy,
+          buff = buf,
+          slot = i,
+          sent = false,
+          sent2 = false
+        }
+        if not self.buffs[enemy.networkID][buf.name] then
+          self.buffs[enemy.networkID][buf.name] = tab
+        end
+      end
+    end
+  end
+  for _, tab in pairs(self.buffs) do
+    for __, info in pairs(tab) do
+      local buf = info.buff
+      if self:Valid(buf) and not info.sent then
+        local tab2 = {
+          name = buf.name:lower(),
+          slot = buf.slot,
+          duration = buf.endT - buf.startT,
+          startT = buf.startT,
+          endT = buf.endT,
+          stacks = buf.stacks
+        }
+        info.sent = true
+        self:MyGainBuff(info.unit, tab2)
+      elseif not self:Valid(buf) and not info.sent2 then
+        local tab2 = {
+          name = buf.name:lower(),
+          slot = buf.slot,
+          duration = buf.endT - buf.startT,
+          startT = buf.startT,
+          endT = buf.endT,
+          stacks = buf.stacks
+        }
+        info.sent2 = true
+        self.buffs[info.unit.networkID][buf.name] = nil
+        self:MyLoseBuff(info.unit, tab2)
+      end
+    end
+  end
+end
+function BuffManager:Valid(buff)
+  return buff and buff.name and buff.startT <= GetGameTimer() and buff.endT >= GetGameTimer()
+end
+function BuffManager:MyGainBuff(unit, buff)
+    --print("Gain: "..buff.name.." "..unit.charName)
+    --if not unit.isMe then print("Gain: "..buff.name) end
+
+    if unit.isMe then
+        --print("Gain: "..buff.name.." "..unit.charName)
+    end
+end
+function BuffManager:MyLoseBuff(unit, buff)
+    --print("Loose: "..buff.name.." "..unit.charName)
+    --if not unit.isMe then print("Loose: "..buff.name) end
+    
+    if unit.isMe then
+        --print("Loose: "..buff.name.." "..unit.charName)
     end
 end
