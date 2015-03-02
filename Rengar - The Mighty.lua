@@ -1,6 +1,6 @@
 local scriptname = "Rengar The Mighty"
 local author = "Da Vinci"
-local version = "1.6"
+local version = "1.7"
 local champion = "Rengar"
 if myHero.charName:lower() ~= champion:lower() then return end
 local igniteslot = nil
