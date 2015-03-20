@@ -1,6 +1,6 @@
 local scriptname = "Rengar The Mighty"
 local author = "Da Vinci"
-local version = "1.7"
+local version = "1.8"
 local champion = "Rengar"
 if myHero.charName:lower() ~= champion:lower() then return end
 local igniteslot = nil
@@ -13,7 +13,7 @@ local W = { Range = 390, Width = 55, Delay = 0.5, Speed = math.huge, LastCastTim
 local E = { Range = 950, Width = 50, Delay = 0.3, Speed = 1500, LastCastTime = 0, Collision = true, IsReady = function() return myHero:CanUseSpell(_E) == READY end, Mana = function() return myHero:GetSpellData(_E).mana end, Damage = function(target) return getDmg("E", target, myHero) end}
 local Ignite = { Range = 600, IsReady = function() return (igniteslot ~= nil and myHero:CanUseSpell(igniteslot) == READY) end, Damage = function(target) return getDmg("IGNITE", target, myHero) end}
 local priorityTable = {
-    p5 = {"Alistar", "Amumu", "Blitzcrank", "Braum", "ChoGath", "DrMundo", "Garen", "Gnar", "Hecarim", "Janna", "JarvanIV", "Leona", "Lulu", "Malphite", "Nami", "Nasus", "Nautilus", "Nunu","Olaf", "Rammus", "Renekton", "Sejuani", "Shen", "Shyvana", "Singed", "Sion", "Skarner", "Sona","Soraka", "Taric", "Thresh", "Volibear", "Warwick", "MonkeyKing", "Yorick", "Zac", "Zyra"},
+    p5 = {"Alistar", "Amumu", "Blitzcrank", "Bard", "Braum", "ChoGath", "DrMundo", "Garen", "Gnar", "Hecarim", "Janna", "JarvanIV", "Leona", "Lulu", "Malphite", "Nami", "Nasus", "Nautilus", "Nunu","Olaf", "Rammus", "Renekton", "Sejuani", "Shen", "Shyvana", "Singed", "Sion", "Skarner", "Sona","Soraka", "Taric", "Thresh", "Volibear", "Warwick", "MonkeyKing", "Yorick", "Zac", "Zyra"},
     p4 = {"Aatrox", "Darius", "Elise", "Evelynn", "Galio", "Gangplank", "Gragas", "Irelia", "Jax","LeeSin", "Maokai", "Morgana", "Nocturne", "Pantheon", "Poppy", "Rengar", "Rumble", "Ryze", "Swain","Trundle", "Tryndamere", "Udyr", "Urgot", "Vi", "XinZhao", "RekSai"},
     p3 = {"Akali", "Diana", "Fiddlesticks", "Fiora", "Fizz", "Heimerdinger", "Jayce", "Kassadin","Kayle", "KhaZix", "Lissandra", "Mordekaiser", "Nidalee", "Riven", "Shaco", "Vladimir", "Yasuo","Zilean"},
     p2 = {"Ahri", "Anivia", "Annie",  "Brand",  "Cassiopeia", "Karma", "Karthus", "Katarina", "Kennen", "LeBlanc",  "Lux", "Malzahar", "MasterYi", "Orianna", "Syndra", "Talon",  "TwistedFate", "Veigar", "VelKoz", "Viktor", "Xerath", "Zed", "Ziggs" },
@@ -206,10 +206,10 @@ function Combo()
         if Config.Combo.R.useQ then CastQ(target) end
         if Config.Combo.R.useW then CastWR(target) end
         if Config.Combo.R.useE and isJumping or isInBush then
-					CastE(target) 
-				elseif os.clock()-LastJump > 6 then 
-					CastE(target) 
-				end   
+		CastE(target) 
+	elseif Config.Combo.R.useE and os.clock()-LastJump > 6 and isJumping or isInBush then 
+		CastE(target) 
+	end   
     end
 end
 
@@ -226,7 +226,7 @@ function CastQ(target)
     if Q.IsReady() and ValidTarget(target, Q.Range) then 
         CastSpell(_Q)
         myHero:Attack(target)
-                SOWi:resetAA()
+        SOWi:resetAA()
     end
 end
 
@@ -289,7 +289,7 @@ function Clear()
         if ValidTarget(minion, 1000) then
             if not Ferocity then 
                 if Config.LaneClear.useE and E.IsReady() then
-                                    CastE(minion)
+                    CastE(minion)
                 end
 
                 if Config.LaneClear.useQ and Q.IsReady() then
@@ -301,7 +301,7 @@ function Clear()
                 end
             else
                 if Config.Combo.R.useE and E.IsReady() then
-                                    CastE(minion)
+                    CastE(minion)
                 end
 
                 if Config.Combo.R.useQ and Q.IsReady() then
@@ -316,26 +316,26 @@ function Clear()
     end
 
     for i, minion in pairs(JungleMinions.objects) do
-        if ValidTarget(minion, 1000) then
+        if ValidTarget(minion, 950) then
             if not Ferocity then
                 if Config.JungleClear.useE and E.IsReady() then
-                                    CastE(minion)
+                	CastE(minion)
                 end
 
                 if Config.JungleClear.useQ and Q.IsReady() then
-                 CastQ(minion)
+                	CastQ(minion)
                 end
 
                 if Config.JungleClear.useW and W.IsReady() then
-                CastW(minion)
+                	CastW(minion)
                 end
             else
                 if Config.Combo.R.useE and E.IsReady() then
-                                    CastE(minion)
+                	CastE(minion)
                 end
 
                 if Config.Combo.R.useQ and Q.IsReady() then
-                    CastQ(minion)
+                	CastQ(minion)
                 end
 
                 if Config.Combo.R.useW and W.IsReady() then
